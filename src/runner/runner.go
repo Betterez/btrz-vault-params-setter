@@ -24,23 +24,32 @@ func main() {
 		fmt.Println("can't create iam")
 		os.Exit(1)
 	}
+	keysMetaData := make([]*iam.AccessKeyMetadata, 40)
 	fmt.Printf("Version %d", versionNumber)
 	accessKeysFilter := &iam.ListAccessKeysInput{}
 	usersFilter := &iam.ListUsersInput{}
 	usersFilter.SetMaxItems(80)
 	accessKeysFilter.SetMaxItems(80)
-	//accessKeysFilter.SetUserName("[\\w+=,.@-]+")
-	accessKeysFilter.SetUserName("qualys2017")
-	// usersResults, err := iamService.ListUsers(usersFilter)
-	// for _, userInformation := range usersResults.Users {
-	// 	fmt.Print(userInformation.String())
-	// }
-	keyResults, err := iamService.ListAccessKeys(accessKeysFilter)
+	searchMask := "[\\w+=,.@-]+"
+	accessKeysFilter.SetUserName(searchMask)
+	//accessKeysFilter.SetUserName("qualys2017")
+	usersResults, err := iamService.ListUsers(usersFilter)
 	if err != nil {
 		fmt.Print("aws error", err)
 		os.Exit(1)
 	}
-	for _, keyInfo := range keyResults.AccessKeyMetadata {
-		fmt.Print(keyInfo.GoString())
+	for _, userInformation := range usersResults.Users {
+		accessKeysFilter.SetUserName(*userInformation.UserName)
+		keyResults, err := iamService.ListAccessKeys(accessKeysFilter)
+		if err != nil {
+			fmt.Print("aws error", err)
+			os.Exit(1)
+		}
+		for _, keyInfo := range keyResults.AccessKeyMetadata {
+			fmt.Print(keyInfo.GoString())
+			keysMetaData = append(keysMetaData, keyInfo)
+		}
 	}
+	fmt.Print(keysMetaData)
+
 }
