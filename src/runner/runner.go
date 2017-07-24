@@ -32,6 +32,7 @@ func main() {
 	accessKeysFilter.SetMaxItems(80)
 	searchMask := "[\\w+=,.@-]+"
 	accessKeysFilter.SetUserName(searchMask)
+	policiesInput := &iam.ListUserPoliciesInput{}
 	//accessKeysFilter.SetUserName("qualys2017")
 	usersResults, err := iamService.ListUsers(usersFilter)
 	if err != nil {
@@ -39,6 +40,12 @@ func main() {
 		os.Exit(1)
 	}
 	for _, userInformation := range usersResults.Users {
+		policiesInput.SetUserName(*userInformation.UserName)
+		fmt.Println("Policy listing for ", *userInformation.UserName)
+		usersPolicies, _ := iamService.ListUserPolicies(policiesInput)
+		for _, currentPolicy := range usersPolicies.PolicyNames {
+			fmt.Println(*currentPolicy)
+		}
 		accessKeysFilter.SetUserName(*userInformation.UserName)
 		keyResults, err := iamService.ListAccessKeys(accessKeysFilter)
 		if err != nil {
@@ -46,7 +53,6 @@ func main() {
 			os.Exit(1)
 		}
 		for _, keyInfo := range keyResults.AccessKeyMetadata {
-			fmt.Print(keyInfo.GoString())
 			keysMetaData = append(keysMetaData, keyInfo)
 		}
 	}
