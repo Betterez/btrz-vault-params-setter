@@ -3,9 +3,10 @@ package main
 import (
 	"btrzaws"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"log"
 	"os"
+
+	"github.com/aws/aws-sdk-go/service/iam"
 )
 
 const (
@@ -24,8 +25,8 @@ func main() {
 		fmt.Println("can't create iam")
 		os.Exit(1)
 	}
-	keysMetaData := make([]*iam.AccessKeyMetadata, 40)
-	fmt.Printf("Version %d", versionNumber)
+	//keysMetaData := make([]*iam.AccessKeyMetadata, 40)
+	fmt.Printf("Version %d\n", versionNumber)
 	accessKeysFilter := &iam.ListAccessKeysInput{}
 	usersFilter := &iam.ListUsersInput{}
 	usersFilter.SetMaxItems(80)
@@ -33,6 +34,7 @@ func main() {
 	searchMask := "[\\w+=,.@-]+"
 	accessKeysFilter.SetUserName(searchMask)
 	policiesInput := &iam.ListUserPoliciesInput{}
+	usersPoliciesNames := make([]string, 0)
 	//accessKeysFilter.SetUserName("qualys2017")
 	usersResults, err := iamService.ListUsers(usersFilter)
 	if err != nil {
@@ -41,21 +43,28 @@ func main() {
 	}
 	for _, userInformation := range usersResults.Users {
 		policiesInput.SetUserName(*userInformation.UserName)
-		fmt.Println("Policy listing for ", *userInformation.UserName)
 		usersPolicies, _ := iamService.ListUserPolicies(policiesInput)
 		for _, currentPolicy := range usersPolicies.PolicyNames {
-			fmt.Println(*currentPolicy)
+			usersPoliciesNames = append(usersPoliciesNames, *currentPolicy)
 		}
-		accessKeysFilter.SetUserName(*userInformation.UserName)
-		keyResults, err := iamService.ListAccessKeys(accessKeysFilter)
-		if err != nil {
-			fmt.Print("aws error", err)
-			os.Exit(1)
+		attachedPolicies, _ := iamService.ListAttachedUserPolicies(&iam.ListAttachedUserPoliciesInput{UserName: userInformation.UserName})
+		for _, currentPolicy := range attachedPolicies.AttachedPolicies {
+			usersPoliciesNames = append(usersPoliciesNames, *currentPolicy.PolicyName)
 		}
-		for _, keyInfo := range keyResults.AccessKeyMetadata {
-			keysMetaData = append(keysMetaData, keyInfo)
+		if len(usersPoliciesNames) > 1 {
+			fmt.Printf("Policy listing for %s\n%v\n\n", *userInformation.UserName, usersPoliciesNames)
+			usersPoliciesNames = make([]string, 0)
 		}
+		// accessKeysFilter.SetUserName(*userInformation.UserName)
+		// keyResults, err := iamService.ListAccessKeys(accessKeysFilter)
+		// if err != nil {
+		// 	fmt.Print("aws error", err)
+		// 	os.Exit(1)
+		// }
+		// for _, keyInfo := range keyResults.AccessKeyMetadata {
+		// 	keysMetaData = append(keysMetaData, keyInfo)
+		// }
 	}
-	fmt.Print(keysMetaData)
+	//fmt.Print(keysMetaData)
 
 }
