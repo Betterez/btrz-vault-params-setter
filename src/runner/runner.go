@@ -157,6 +157,10 @@ func setup() {
 }
 
 func createTestRole() {
+	policyDocument := `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["ec2.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
+	roleName := "TheTestRole2"
+	policyName := "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+	userName := "testUser"
 	awsSession, err := btrzaws.GetAWSSession()
 	if err != nil {
 		fmt.Print(err, "can't get a session")
@@ -168,9 +172,6 @@ func createTestRole() {
 		fmt.Println("can't create iam")
 		os.Exit(1)
 	}
-	policyDocument := `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["s3.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
-	roleName := "TheTestRole2"
-	policyName := "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 	path := "/"
 	resp, err := iamService.CreateRole(&iam.CreateRoleInput{
 		AssumeRolePolicyDocument: &policyDocument,
@@ -191,10 +192,110 @@ func createTestRole() {
 		os.Exit(1)
 	}
 	fmt.Println(policyResponse)
+
+	userOutput, err := iamService.CreateUser(&iam.CreateUserInput{
+		UserName: &userName,
+	})
+	if err != nil {
+		fmt.Print(err, "exiting", "\n")
+		os.Exit(1)
+	}
+	fmt.Println(userOutput)
 }
 
+// func createTestPolicy() {
+// 	policyDocument := `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":["ec2.amazonaws.com"]},"Action":["sts:AssumeRole"]}]}`
+// 	policyName := "vue-live-test"
+// 	userName := "testUser"
+// 	path := "/"
+// 	policyDescription := "policy for vue test service"
+// 	awsSession, err := btrzaws.GetAWSSession()
+// 	if err != nil {
+// 		fmt.Print(err, "can't get a session")
+// 		os.Exit(1)
+// 	}
+// 	log.Println("session created")
+// 	iamService := iam.New(awsSession)
+// 	if iamService == nil {
+// 		fmt.Println("can't create iam")
+// 		os.Exit(1)
+// 	}
+// 	policyResponse, err := iamService.CreatePolicy(
+// 		&iam.CreatePolicyInput{
+// 			PolicyDocument: &policyDocument,
+// 			Path:           &path,
+// 			Description:    &policyDescription,
+// 			PolicyName:     &policyName,
+// 		})
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		os.Exit(1)
+// 	}
+// 	fmt.Println(policyResponse)
+// }
+
+func createTestGroup() {
+	groupName := "ABetterezTest"
+	policySourceName := "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+	userName := "testUser"
+	path := "/"
+	awsSession, err := btrzaws.GetAWSSession()
+	if err != nil {
+		fmt.Print(err, "can't get a session")
+		os.Exit(1)
+	}
+	log.Println("session created")
+	iamService := iam.New(awsSession)
+	if iamService == nil {
+		fmt.Println("can't create iam")
+		os.Exit(1)
+	}
+	_, err = iamService.CreateGroup(&iam.CreateGroupInput{
+		GroupName: &groupName,
+		Path:      &path,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	_, err = iamService.AttachGroupPolicy(&iam.AttachGroupPolicyInput{
+		GroupName: &groupName,
+		PolicyArn: &policySourceName,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	userResponse, err := iamService.CreateUser(&iam.CreateUserInput{
+		Path:     &path,
+		UserName: &userName,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(*userResponse)
+	_, err = iamService.AddUserToGroup(&iam.AddUserToGroupInput{
+		GroupName: &groupName,
+		UserName:  &userName,
+	})
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Println("deleting user and group now")
+	iamService.DeleteUser(
+		&iam.DeleteUserInput{
+			UserName: &userName,
+		})
+	iamService.DeleteGroup(&iam.DeleteGroupInput{
+		GroupName: &groupName,
+	})
+}
 func main() {
-	createTestRole()
+	createTestGroup()
 }
 
 //fmt.Print(keysMetaData)
