@@ -1,7 +1,6 @@
 package btrzutils
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -18,7 +17,6 @@ func GetToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("loading token from json")
 	token, err := jsonData.Get("staging").Get("vault").Get("token").String()
 	return token, err
 }
@@ -78,6 +76,66 @@ func TestJSONValues(t *testing.T) {
 	}
 	if resultData != "jarjar binxx" {
 		t.Fatalf("return valuse equal to %s", resultData)
+	}
+}
+
+func TestGetRepoValue(t *testing.T) {
+	const (
+		applicationPath = "secret/betterez-app"
+		storagePath     = "secret/go-app-test"
+		AwsKeyName      = "AWS-ACCESS-KEY"
+		AwsKeyValue     = "1234567891234567"
+	)
+	token, err := GetToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if token == "" {
+		t.SkipNow()
+	}
+	driver, err := CreateVaultConnectionFromParameters("vault-staging.betterez.com", token, 9000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if driver.GetValutStatus() != "online" {
+		t.Fatalf("Driver status is %s", driver.GetValutStatus())
+	}
+	vaultData, err := driver.GetJSONValue(applicationPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	jsonData, err := simplejson.NewJson([]byte(vaultData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	appJSONData := jsonData.Get("data")
+	appJSONData.Set(AwsKeyName, AwsKeyValue)
+	bytesJSON, err := appJSONData.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	code, err := driver.PutJSONValue(storagePath, string(bytesJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if code >= 400 {
+		t.Fatalf("code %d returned from server", code)
+	}
+	vaultData, err = driver.GetJSONValue(storagePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	jsonData, err = simplejson.NewJson([]byte(vaultData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	appJSONData = jsonData.Get("data")
+	extract, err := appJSONData.Get(AwsKeyName).String()
+	if err != nil {
+		t.Fatal(appJSONData.Get(AwsKeyName), err)
+	}
+	if extract != AwsKeyValue {
+		t.Fatalf("extracted key equals to %s, not to %s", extract, AwsKeyValue)
 	}
 
 }
