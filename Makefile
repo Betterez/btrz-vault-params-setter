@@ -18,3 +18,4 @@ setup:
 	go get -u github.com/aws/aws-sdk-go/...
 	go get github.com/mxk/go-sqlite/sqlite3
 	go get golang.org/x/crypto/ssh
+	go get github.com/bitly/go-simplejson

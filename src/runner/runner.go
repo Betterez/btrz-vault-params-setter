@@ -275,6 +275,7 @@ func createTestGroup() {
 		os.Exit(1)
 	}
 	fmt.Println(*userResponse)
+
 	_, err = iamService.AddUserToGroup(&iam.AddUserToGroupInput{
 		GroupName: &groupName,
 		UserName:  &userName,
@@ -284,15 +285,22 @@ func createTestGroup() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	fmt.Println("deleting user and group now")
-	iamService.DeleteUser(
-		&iam.DeleteUserInput{
-			UserName: &userName,
-		})
-	iamService.DeleteGroup(&iam.DeleteGroupInput{
-		GroupName: &groupName,
+	userKeysResponse, err := iamService.CreateAccessKey(&iam.CreateAccessKeyInput{
+		UserName: &userName,
 	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(userKeysResponse)
+	//fmt.Println("deleting user and group now")
+	// iamService.DeleteUser(
+	// 	&iam.DeleteUserInput{
+	// 		UserName: &userName,
+	// 	})
+	// iamService.DeleteGroup(&iam.DeleteGroupInput{
+	// 	GroupName: &groupName,
+	// })
 }
 func main() {
 	createTestGroup()
