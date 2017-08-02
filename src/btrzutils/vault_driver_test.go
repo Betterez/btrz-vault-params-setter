@@ -33,8 +33,8 @@ func TestConnectionFromJSONData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if driver.GetValutStatus() != "online" {
-		t.Fatalf("Driver status is %s", driver.GetValutStatus())
+	if driver.GetVaultStatus() != "online" {
+		t.Fatalf("Driver status is %s", driver.GetVaultStatus())
 	}
 }
 
@@ -52,8 +52,8 @@ func TestJSONValues(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if driver.GetValutStatus() != "online" {
-		t.Fatalf("Driver status is %s", driver.GetValutStatus())
+	if driver.GetVaultStatus() != "online" {
+		t.Fatalf("Driver status is %s", driver.GetVaultStatus())
 	}
 	code, err := driver.PutJSONValue(testPath, testJSONData)
 	if err != nil {
@@ -97,8 +97,8 @@ func TestGetRepoValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if driver.GetValutStatus() != "online" {
-		t.Fatalf("Driver status is %s", driver.GetValutStatus())
+	if driver.GetVaultStatus() != "online" {
+		t.Fatalf("Driver status is %s", driver.GetVaultStatus())
 	}
 	vaultData, err := driver.GetJSONValue(applicationPath)
 	if err != nil {

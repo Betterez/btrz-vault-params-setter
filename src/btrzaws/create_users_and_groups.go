@@ -1,6 +1,7 @@
 package btrzaws
 
 import (
+	"btrzutils"
 	"errors"
 	"fmt"
 
@@ -30,6 +31,11 @@ func GenerateServiceInformation(serviceName string) *ServiceInformation {
 // AddServiceArn - adds an aws arn to the service request
 func (si *ServiceInformation) AddServiceArn(arn string) {
 	si.RequiredArn = append(si.RequiredArn, arn)
+}
+
+// GetVaultPath - return the vault (+secret) path for this service
+func (si *ServiceInformation) GetVaultPath() string {
+	return "secret/" + si.ServiceName
 }
 
 // GetGroupName - return the group name for the service
@@ -108,6 +114,21 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 }
 
 func addKeysToVault(environment string, akOutput *iam.CreateAccessKeyOutput, serviceInfo *ServiceInformation) error {
-	fmt.Println("adding ", *akOutput.AccessKey.AccessKeyId)
+	const fileName = "secrets/secrets.json"
+	params, err := btrzutils.LoadVaultInfoFromJSONFile(fileName, environment)
+	if err != nil {
+		return err
+	}
+	connection, err := btrzutils.CreateVaultConnection(params)
+	if err != nil {
+		return err
+	}
+	dataString, err := connection.GetJSONValue(serviceInfo.GetVaultPath())
+	if err != nil {
+		return err
+	}
+	if len(dataString) > 2 {
+		return errors.New("data string too short")
+	}
 	return nil
 }

@@ -89,8 +89,9 @@ func CreateVaultConnectionFromParameters(address, token string, port int) (*Vaul
 }
 
 // GetJSONValue - get json string from the server
+// NOTE vault must include the path /secret/ befor.
 func (v *VaultServer) GetJSONValue(path string) (string, error) {
-	if v.GetValutStatus() != VaultOnline {
+	if v.GetVaultStatus() != VaultOnline {
 		return "", errors.New("not connected, locked or not authenticated")
 	}
 	requestURL := fmt.Sprintf("http://%s:%d/v1/%s", v.address, v.port, path)
@@ -114,7 +115,7 @@ func (v *VaultServer) GetJSONValue(path string) (string, error) {
 // PutJSONValue - put json value into the specific path.
 // NOTE vault must include the path /secret/ befor.
 func (v *VaultServer) PutJSONValue(path, value string) (int, error) {
-	if v.GetValutStatus() != VaultOnline {
+	if v.GetVaultStatus() != VaultOnline {
 		return 0, errors.New("not connected, locked or not authenticated")
 	}
 	requestURL := fmt.Sprintf("http://%s:%d/v1/%s", v.address, v.port, path)
@@ -131,8 +132,8 @@ func (v *VaultServer) PutJSONValue(path, value string) (int, error) {
 	return response.StatusCode, nil
 }
 
-//GetValutStatus - returns current vault status
-func (v *VaultServer) GetValutStatus() string {
+//GetVaultStatus - returns current vault status
+func (v *VaultServer) GetVaultStatus() string {
 	if !v.initialized {
 		return "not initizlied"
 	}

@@ -2,11 +2,13 @@ package main
 
 import (
 	"btrzaws"
+	"btrzutils"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go/service/iam"
+	simplejson "github.com/bitly/go-simplejson"
 )
 
 const (
@@ -32,7 +34,25 @@ func setup() {
 	}
 }
 func main() {
-
+	vaultSetings, err := btrzutils.LoadVaultInfoFromJSONFile("secrets/secrets.json", "staging")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	connection, err := btrzutils.CreateVaultConnection(vaultSetings)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	dataString, _ := connection.GetJSONValue("secret/betterez-app")
+	jsonData, err := simplejson.NewJson([]byte(dataString))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if _, value := jsonData.CheckGet("data"); !value {
+		fmt.Print("no data for this value\n")
+	} else {
+		fmt.Println(jsonData.Get("data"))
+	}
 }
-
-//fmt.Print(keysMetaData)
