@@ -263,3 +263,88 @@ func TestExistingJSONValue(t *testing.T) {
 		t.Fatalf("Bad value returned, expecting 'test', got '%s'", userData)
 	}
 }
+
+func TestSetValue(t *testing.T) {
+	token, err := GetToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if token == "" {
+		t.SkipNow()
+	}
+	connection, err := CreateVaultConnectionFromParameters("vault-staging.betterez.com", token, 9000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	randomePath := "secret/" + RandStringRunes(30)
+	randomValue := RandStringRunes(30)
+	code, err := connection.PutJSONValue(randomePath, fmt.Sprintf(`{"value":"%s"}`, randomValue))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if code >= 400 {
+		t.Fatalf("bad http code returned - %d", code)
+	}
+	value, err := connection.GetJSONValue(randomePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	formattedData, err := simplejson.NewJson([]byte(value))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fetchedValue, err := formattedData.Get("data").Get("value").String()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fetchedValue != randomValue {
+		t.Fatalf("Bad value returned, expecting %s, got %s", randomValue, fetchedValue)
+	}
+}
+
+func TestAddValueToPath(t *testing.T) {
+	token, err := GetToken()
+	randomePath := "secret/" + RandStringRunes(30)
+	randomValue := RandStringRunes(30)
+	randomValue2 := RandStringRunes(30)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if token == "" {
+		t.SkipNow()
+	}
+	connection, err := CreateVaultConnectionFromParameters("vault-staging.betterez.com", token, 9000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code, err := connection.PutJSONValue(randomePath, fmt.Sprintf(`{"value":"%s"}`, randomValue))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if code >= 400 {
+		t.Fatalf("bad http code returned - %d", code)
+	}
+	connection.AddValuesInPath(randomePath, fmt.Sprintf(`{"value2":"%s"}`, randomValue2))
+	value, err := connection.GetJSONValue(randomePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	formattedData, err := simplejson.NewJson([]byte(value))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fetchedValue, err := formattedData.Get("data").Get("value").String()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fetchedValue != randomValue {
+		t.Fatalf("Bad value returned, expecting %s, got %s", randomValue, fetchedValue)
+	}
+	fetchedValue, err = formattedData.Get("data").Get("value2").String()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fetchedValue != randomValue2 {
+		t.Fatalf("Bad value returned, expecting %s, got %s", randomValue, fetchedValue)
+	}
+}
