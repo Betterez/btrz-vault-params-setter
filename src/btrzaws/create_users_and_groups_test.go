@@ -38,8 +38,10 @@ func TestLoadingServiceFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	serviceInfo := servicesData["btrz-data-import"]
-	if serviceInfo.ServiceName != "btrz-data-import" {
-		t.Fatalf("service name error, expecting btrz-data-import, got %s", serviceInfo.ServiceName)
+	for serviceKey := range servicesData {
+		serviceInfo := servicesData[serviceKey]
+		if serviceInfo.ServiceName != serviceKey {
+			t.Fatalf("service name error, expecting btrz-data-import, got %s", serviceInfo.ServiceName)
+		}
 	}
 }
