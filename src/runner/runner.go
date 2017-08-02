@@ -25,12 +25,14 @@ func setup() {
 		fmt.Println("can't create iam")
 		os.Exit(1)
 	}
-
-}
-
+	info := btrzaws.GenerateServiceInformation("test-service-1")
+	err = btrzaws.CreateGroupAndUsersForService(awsSession, iamService, info)
+	if err != nil {
+		fmt.Println(err, "creating users and group")
+	}
 }
 func main() {
-	setup()
+
 }
 
 //fmt.Print(keysMetaData)

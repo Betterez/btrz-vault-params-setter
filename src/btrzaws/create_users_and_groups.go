@@ -1,6 +1,7 @@
 package btrzaws
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,10 +11,10 @@ import (
 
 // ServiceInformation - service informaito needed to create groups and users
 type ServiceInformation struct {
-	ServiceName          string
-	RequiredEnvironments []string
-	RequiredArn          []string
-	Path                 string
+	ServiceName          string   `json:"service_name"`
+	RequiredEnvironments []string `json:"environments"`
+	RequiredArn          []string `json:"arns"`
+	Path                 string   `json:"path"`
 }
 
 // GenerateServiceInformation - create a ServiceInformation with default settings
@@ -36,8 +37,29 @@ func (si *ServiceInformation) GetGroupName() string {
 	return fmt.Sprintf("%s-Group", si.ServiceName)
 }
 
+// IsInformationOK - Checks if the informaito provided is OK to process
+func (si *ServiceInformation) IsInformationOK() bool {
+	if si.ServiceName == "" {
+		return false
+	}
+	if si.RequiredArn == nil || si.RequiredEnvironments == nil {
+		return false
+	}
+
+	if len(si.RequiredEnvironments) == 0 {
+		return false
+	}
+	if len(si.RequiredArn) == 0 {
+		return false
+	}
+	return true
+}
+
 // CreateGroupAndUsersForService - for a given service name creates a groups, users and stores the keys in the vault
 func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.IAM, serviceInfo *ServiceInformation) error {
+	if serviceInfo.IsInformationOK() == false {
+		return errors.New("Inadequate service info")
+	}
 	_, err := iamService.CreateGroup(&iam.CreateGroupInput{
 		GroupName: aws.String(serviceInfo.GetGroupName()),
 		Path:      &serviceInfo.Path,

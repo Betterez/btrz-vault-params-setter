@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	simplejson "github.com/bitly/go-simplejson"
 )
 
 //VaultServer - a vault driver implementation
@@ -27,9 +30,9 @@ const (
 
 // VaultConnectionParameters - VaultConnectionParameters values needed to create a vault connection
 type VaultConnectionParameters struct {
-	Address string
-	Port    int
-	Token   string
+	Address string `json:"address"`
+	Port    int    `json:"port"`
+	Token   string `json:"token"`
 }
 
 //GetServerAddress - returns server address
@@ -143,4 +146,30 @@ func (v *VaultServer) GetValutStatus() string {
 		return VaultOnline
 	}
 	return "unknown"
+}
+
+// LoadVaultInfoFromJSONFile - loads vault parameters from json file
+func LoadVaultInfoFromJSONFile(filename, environment string) (*VaultConnectionParameters, error) {
+	jsonFile, err := os.Open(filename)
+	result := &VaultConnectionParameters{}
+	if err != nil {
+		return nil, err
+	}
+	jsonData, err := simplejson.NewFromReader(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+	result.Token, err = jsonData.Get(environment).Get("vault").Get("token").String()
+	if err != nil {
+		return nil, err
+	}
+	result.Address, err = jsonData.Get(environment).Get("vault").Get("address").String()
+	if err != nil {
+		return nil, err
+	}
+	result.Port, err = jsonData.Get(environment).Get("vault").Get("port").Int()
+	if err != nil {
+		return nil, err
+	}
+	return result, err
 }

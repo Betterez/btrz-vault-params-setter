@@ -139,3 +139,39 @@ func TestGetRepoValue(t *testing.T) {
 	}
 
 }
+
+func TestParametersLoading(t *testing.T) {
+	filename := "../../secrets/secrets.json"
+	address := "vault-staging.betterez.com"
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		t.SkipNow()
+	}
+	params, err := LoadVaultInfoFromJSONFile(filename, "staging")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if params.Address == "" {
+		t.Fatal("Bad address loaded")
+	}
+	if params.Address != address {
+		t.Fatalf("expecting %s, got %s", address, params.Address)
+	}
+}
+
+func TestParametersLoading2(t *testing.T) {
+	filename := "../../secrets/secrets.json"
+	port := 9000
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		t.SkipNow()
+	}
+	params, err := LoadVaultInfoFromJSONFile(filename, "staging")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if params.Address == "" {
+		t.Fatal("Bad address loaded")
+	}
+	if params.Port != port {
+		t.Fatalf("expecting %d, got %d", port, params.Port)
+	}
+}
