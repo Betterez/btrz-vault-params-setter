@@ -265,6 +265,7 @@ func TestExistingJSONValue(t *testing.T) {
 }
 
 func TestSetValue(t *testing.T) {
+	t.SkipNow()
 	token, err := GetToken()
 	if err != nil {
 		t.Fatal(err)
@@ -303,6 +304,7 @@ func TestSetValue(t *testing.T) {
 }
 
 func TestAddValueToPath(t *testing.T) {
+	t.SkipNow()
 	token, err := GetToken()
 	randomePath := "secret/" + RandStringRunes(30)
 	randomValue := RandStringRunes(30)

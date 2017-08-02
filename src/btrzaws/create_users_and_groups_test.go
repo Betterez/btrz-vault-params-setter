@@ -1,6 +1,10 @@
 package btrzaws
 
-import "testing"
+import (
+	"encoding/json"
+	"io/ioutil"
+	"testing"
+)
 
 func TestBadServiceInfo(t *testing.T) {
 	info := &ServiceInformation{}
@@ -21,5 +25,17 @@ func TestAddArn(t *testing.T) {
 	info.AddServiceArn("test")
 	if !info.IsInformationOK() {
 		t.Fatal("Service information is correct but bad value returned")
+	}
+}
+func TestLoadingServiceFile(t *testing.T) {
+	servicesFile := "../../services.services.json"
+	data, err := ioutil.ReadFile(servicesFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	servicesData := make(map[string]ServiceInformation)
+	err = json.Unmarshal(data, servicesData)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
