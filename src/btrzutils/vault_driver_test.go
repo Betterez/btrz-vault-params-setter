@@ -251,4 +251,15 @@ func TestExistingJSONValue(t *testing.T) {
 	if checkPoint != 1 {
 		t.Fatalf("Bad checkpoint value (%d!=1)", checkPoint)
 	}
+	dataJSON, exists := JSONData.CheckGet("data")
+	if !exists {
+		t.Fatal("Existing key returned null!")
+	}
+	userData, err := dataJSON.Get("user").String()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if userData != "test" {
+		t.Fatalf("Bad value returned, expecting 'test', got '%s'", userData)
+	}
 }
