@@ -1,0 +1,12 @@
+{
+  "btrz-worker-data-import":{
+    "service_name":"btrz-worker-data-import",
+    "environments":["staging"],
+    "arns":[
+      "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+      "arn:aws:iam::aws:policy/AmazonSESFullAccess",
+      "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+    ],
+    "path":"/"
+  }
+}

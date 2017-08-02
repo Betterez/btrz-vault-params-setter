@@ -104,7 +104,7 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 		if err != nil {
 			return err
 		}
-		err = addKeysToVault(environment, userKeysResponse, serviceInfo)
+		_, err = addKeysToVault(environment, userKeysResponse, serviceInfo)
 		if err != nil {
 			return err
 		}
@@ -113,22 +113,17 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 	return nil
 }
 
-func addKeysToVault(environment string, akOutput *iam.CreateAccessKeyOutput, serviceInfo *ServiceInformation) error {
+func addKeysToVault(environment string, akOutput *iam.CreateAccessKeyOutput, serviceInfo *ServiceInformation) (int, error) {
 	const fileName = "secrets/secrets.json"
 	params, err := btrzutils.LoadVaultInfoFromJSONFile(fileName, environment)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	connection, err := btrzutils.CreateVaultConnection(params)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	dataString, err := connection.GetJSONValue(serviceInfo.GetVaultPath())
-	if err != nil {
-		return err
-	}
-	if len(dataString) > 2 {
-		return errors.New("data string too short")
-	}
-	return nil
+	awsKeysString := fmt.Sprintf(`{"AWS_SERVICE_KEY":"%s","AWS_SERVICE_SECRET":"%s"}`, *akOutput.AccessKey.AccessKeyId, *akOutput.AccessKey.SecretAccessKey)
+	code, err := connection.AddValuesInPath(serviceInfo.GetVaultPath(), awsKeysString)
+	return code, err
 }
