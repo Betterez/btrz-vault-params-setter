@@ -237,3 +237,18 @@ func TestJSONAddition(t *testing.T) {
 	}
 
 }
+
+func TestExistingJSONValue(t *testing.T) {
+	testString := `{"data":{"user":"test","password":"q1w2e3"},"checkpoint":1}`
+	JSONData, err := simplejson.NewJson([]byte(testString))
+	if err != nil {
+		t.Fatal(err)
+	}
+	checkPoint, err := JSONData.Get("checkpoint").Int()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checkPoint != 1 {
+		t.Fatalf("Bad checkpoint value (%d!=1)", checkPoint)
+	}
+}

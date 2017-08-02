@@ -133,21 +133,50 @@ func (v *VaultServer) PutJSONValue(path, value string) (int, error) {
 }
 
 // AddValuesInPath - adds values in the selected path without deleting other values.
-func (v *VaultServer) AddValuesInPath(path, values string) error {
-	// valuesData, err := simplejson.NewJson([]byte(values))
-	// if err != nil {
-	// 	return err
-	// }
-	// existingData, err := v.GetJSONValue(path)
-	// if err != nil {
-	// 	return err
-	// }
-	// existingDataJSON, err := simplejson.NewJson([]byte(existingData))
-	// if err != nil {
-	// 	return err
-	// }
-	// existingDataJSON.Map()
-	return nil
+func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
+	JSONToLoad := simplejson.New()
+	valuesData, err := simplejson.NewJson([]byte(values))
+	if err != nil {
+		return 0, err
+	}
+	existingDataString, err := v.GetJSONValue(path)
+	if err != nil {
+		return 0, err
+	}
+	existingDataJSON, err := simplejson.NewJson([]byte(existingDataString))
+	if err != nil {
+		return 0, err
+	}
+	if vaultJSONData, exists := existingDataJSON.CheckGet("data"); exists {
+		allVaultKeys, err1 := vaultJSONData.Map()
+		if err1 != nil {
+			return 0, err1
+		}
+		for key := range allVaultKeys {
+			keyValue, err1 := vaultJSONData.Get(key).String()
+			if err1 != nil {
+				return 0, err1
+			}
+			JSONToLoad.Set(key, keyValue)
+		}
+	}
+	valuesDataMap, err := valuesData.Map()
+	if err != nil {
+		return 0, err
+	}
+	for key := range valuesDataMap {
+		keyValue, err1 := valuesData.Get(key).String()
+		if err1 != nil {
+			return 0, err1
+		}
+		JSONToLoad.Set(key, keyValue)
+	}
+	JSONToLoadData, err := JSONToLoad.MarshalJSON()
+	if err != nil {
+		return 0, err
+	}
+	code, err := v.PutJSONValue(path, string(JSONToLoadData))
+	return code, err
 }
 
 //GetVaultStatus - returns current vault status
