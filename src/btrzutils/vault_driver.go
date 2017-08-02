@@ -132,6 +132,24 @@ func (v *VaultServer) PutJSONValue(path, value string) (int, error) {
 	return response.StatusCode, nil
 }
 
+// AddValuesInPath - adds values in the selected path without deleting other values.
+func (v *VaultServer) AddValuesInPath(path, values string) error {
+	// valuesData, err := simplejson.NewJson([]byte(values))
+	// if err != nil {
+	// 	return err
+	// }
+	// existingData, err := v.GetJSONValue(path)
+	// if err != nil {
+	// 	return err
+	// }
+	// existingDataJSON, err := simplejson.NewJson([]byte(existingData))
+	// if err != nil {
+	// 	return err
+	// }
+	// existingDataJSON.Map()
+	return nil
+}
+
 //GetVaultStatus - returns current vault status
 func (v *VaultServer) GetVaultStatus() string {
 	if !v.initialized {

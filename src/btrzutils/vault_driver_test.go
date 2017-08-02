@@ -1,6 +1,7 @@
 package btrzutils
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -174,4 +175,65 @@ func TestParametersLoading2(t *testing.T) {
 	if params.Port != port {
 		t.Fatalf("expecting %d, got %d", port, params.Port)
 	}
+}
+
+func TestJSONKeys(t *testing.T) {
+	testString := `{"user":"test","password":"q1w2e3"}`
+	var results string
+	testJSON, err := simplejson.NewJson([]byte(testString))
+	if err != nil {
+		t.Fatal(err)
+	}
+	testMap, err := testJSON.Map()
+	if err != nil {
+		t.Fatal(err, testJSON)
+	}
+	for key := range testMap {
+		keyValue, _ := testJSON.Get(key).String()
+		results += keyValue
+	}
+	if results != "testq1w2e3" {
+		t.Fatalf("results = %s", results)
+	}
+}
+
+func TestJSONAddition(t *testing.T) {
+	testString := `{"user":"test","password":"q1w2e3"}`
+	additionString := `{"data":"hello world"}`
+	resultJSON := simplejson.New()
+	additionJSON, err := simplejson.NewJson([]byte(additionString))
+	if err != nil {
+		t.Fatal(err)
+	}
+	testJSON, err := simplejson.NewJson([]byte(testString))
+	if err != nil {
+		t.Fatal(err)
+	}
+	testMap, err := testJSON.Map()
+	if err != nil {
+		t.Fatal(err, testJSON)
+	}
+	for key := range testMap {
+		keyValue, _ := testJSON.Get(key).String()
+		resultJSON.Set(key, keyValue)
+	}
+	testMap, err = additionJSON.Map()
+	if err != nil {
+		t.Fatal(err, testJSON)
+	}
+	for key := range testMap {
+		keyValue, _ := additionJSON.Get(key).String()
+		fmt.Printf("%s = %s", key, keyValue)
+		resultJSON.Set(key, keyValue)
+	}
+	resultData, err := resultJSON.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	resutString := string(resultData)
+	// note that the list is now ordered
+	if resutString != `{"data":"hello world","password":"q1w2e3","user":"test"}` {
+		t.Fatalf("bad results: %s\n%v", resutString, additionJSON)
+	}
+
 }
