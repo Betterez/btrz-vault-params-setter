@@ -28,14 +28,18 @@ func TestAddArn(t *testing.T) {
 	}
 }
 func TestLoadingServiceFile(t *testing.T) {
-	servicesFile := "../../services.services.json"
+	servicesFile := "../../services/services.json"
 	data, err := ioutil.ReadFile(servicesFile)
 	if err != nil {
 		t.Fatal(err)
 	}
 	servicesData := make(map[string]ServiceInformation)
-	err = json.Unmarshal(data, servicesData)
+	err = json.Unmarshal(data, &servicesData)
 	if err != nil {
 		t.Fatal(err)
+	}
+	serviceInfo := servicesData["btrz-data-import"]
+	if serviceInfo.ServiceName != "btrz-data-import" {
+		t.Fatalf("service name error, expecting btrz-data-import, got %s", serviceInfo.ServiceName)
 	}
 }
