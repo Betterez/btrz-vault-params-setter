@@ -133,6 +133,7 @@ func (v *VaultServer) PutJSONValue(path, value string) (int, error) {
 }
 
 // AddValuesInPath - adds values in the selected path without deleting other values.
+// exsiting values will be overwritten
 func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
 	JSONToLoad := simplejson.New()
 	valuesData, err := simplejson.NewJson([]byte(values))
