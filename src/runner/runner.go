@@ -33,7 +33,8 @@ func setup() {
 		fmt.Println(err, "creating users and group")
 	}
 }
-func main() {
+
+func updateGroupsAndUsers() {
 	serviceFile := "./services/services.json"
 	if _, err := os.Stat(serviceFile); os.IsNotExist(err) {
 		fmt.Printf("file %s does not exist", serviceFile)
@@ -64,4 +65,7 @@ func main() {
 		currentServiceInfo := servicesData[serviceKey]
 		btrzaws.CreateGroupAndUsersForService(awsSession, iamService, &currentServiceInfo)
 	}
+}
+func main() {
+	updateGroupsAndUsers()
 }

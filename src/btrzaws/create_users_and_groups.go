@@ -66,12 +66,27 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 	if serviceInfo.IsInformationOK() == false {
 		return errors.New("Inadequate service info")
 	}
-	_, err := iamService.CreateGroup(&iam.CreateGroupInput{
-		GroupName: aws.String(serviceInfo.GetGroupName()),
-		Path:      &serviceInfo.Path,
+	parameterFound := false
+	groupsResponse, err := iamService.ListGroups(&iam.ListGroupsInput{
+		PathPrefix: aws.String("/"),
 	})
 	if err != nil {
 		return err
+	}
+	for _, groupInfo := range groupsResponse.Groups {
+		if *groupInfo.GroupName == serviceInfo.GetGroupName() {
+			parameterFound = true
+			break
+		}
+	}
+	if !parameterFound {
+		_, err = iamService.CreateGroup(&iam.CreateGroupInput{
+			GroupName: aws.String(serviceInfo.GetGroupName()),
+			Path:      &serviceInfo.Path,
+		})
+		if err != nil {
+			return err
+		}
 	}
 	for _, PolicyArn := range serviceInfo.RequiredArn {
 		_, err = iamService.AttachGroupPolicy(&iam.AttachGroupPolicyInput{
@@ -84,12 +99,27 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 	}
 	for _, environment := range serviceInfo.RequiredEnvironments {
 		currentUserName := fmt.Sprintf("user-%s-%s", serviceInfo.ServiceName, environment)
-		_, err = iamService.CreateUser(&iam.CreateUserInput{
-			Path:     &serviceInfo.Path,
-			UserName: aws.String(currentUserName),
+		parameterFound = false
+		usersListResponse, err := iamService.ListUsers(&iam.ListUsersInput{
+			PathPrefix: aws.String("/"),
 		})
 		if err != nil {
 			return err
+		}
+		for _, userInformation := range usersListResponse.Users {
+			if *userInformation.UserName == currentUserName {
+				parameterFound = true
+				break
+			}
+		}
+		if !parameterFound {
+			_, err = iamService.CreateUser(&iam.CreateUserInput{
+				Path:     &serviceInfo.Path,
+				UserName: aws.String(currentUserName),
+			})
+			if err != nil {
+				return err
+			}
 		}
 		_, err = iamService.AddUserToGroup(&iam.AddUserToGroupInput{
 			GroupName: aws.String(serviceInfo.GetGroupName()),
