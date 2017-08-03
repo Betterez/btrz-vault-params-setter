@@ -128,15 +128,17 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 		if err != nil {
 			return err
 		}
-		userKeysResponse, err := iamService.CreateAccessKey(&iam.CreateAccessKeyInput{
-			UserName: &currentUserName,
-		})
-		if err != nil {
-			return err
-		}
-		_, err = addKeysToVault(environment, userKeysResponse, serviceInfo)
-		if err != nil {
-			return err
+		if !parameterFound {
+			userKeysResponse, err := iamService.CreateAccessKey(&iam.CreateAccessKeyInput{
+				UserName: &currentUserName,
+			})
+			if err != nil {
+				return err
+			}
+			_, err = addKeysToVault(environment, userKeysResponse, serviceInfo)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
