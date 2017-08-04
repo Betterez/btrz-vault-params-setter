@@ -8,5 +8,15 @@
       "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
     ],
     "path":"/"
+  },
+  "btrz-worker-exports":{
+    "service_name":"btrz-worker-exports",
+    "environments":["staging","sandbox"],
+      "arns":[
+        "arn:aws:iam::aws:policy/AmazonSESFullAccess",
+        "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+        "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+      ],
+      "path":"/"
   }
 }
