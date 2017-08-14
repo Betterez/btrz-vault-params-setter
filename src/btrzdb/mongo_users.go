@@ -33,7 +33,7 @@ func CreateUser(username, password, databaseName, databaseRole, environment stri
 		return false, nil
 	}
 	betterezUser := &mgo.User{Password: password, Username: username, Roles: []mgo.Role{mgo.Role(databaseRole)}}
-	err = connection.DB("secondjob").UpsertUser(betterezUser)
+	err = connection.DB(databaseName).UpsertUser(betterezUser)
 	if err != nil {
 		return false, err
 	}
