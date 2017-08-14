@@ -1,15 +1,15 @@
 package btrzdb
 
 import (
-	_ "os"
+	"os"
 	"testing"
 )
 
 func TestDatabasaParameters(t *testing.T) {
 	data, err := GetDialInfo("local1")
-	// if os.IsNotExist(err) {
-	// 	t.SkipNow()
-	// }
+	if os.IsNotExist(err) {
+		t.SkipNow()
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

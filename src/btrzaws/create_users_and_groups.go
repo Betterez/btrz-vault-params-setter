@@ -95,11 +95,11 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 		if serviceInfo.HasMongoInformation() {
 			created, err := createMongoUser(serviceInfo, environment)
 			if err != nil {
-				fmt.Println("error creating user, ", err)
+				log.Println("error creating user, ", err)
 				return err
 			}
 			if !created {
-				fmt.Printf("User %s was not created, it is already exists\n", serviceInfo.GetMongoUserName())
+				log.Printf("User %s was not created, it is already exists\n", serviceInfo.GetMongoUserName())
 			}
 		}
 	}
@@ -118,7 +118,7 @@ func createMongoUser(serviceInfo *ServiceInformation, environment string) (bool,
 		if err != nil {
 			return false, err
 		}
-		fmt.Printf("user info pushed to vault with code %d", code)
+		log.Printf("user info pushed to vault with code %d", code)
 	}
 	return created, nil
 }

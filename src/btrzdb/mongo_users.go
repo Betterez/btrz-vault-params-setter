@@ -25,7 +25,7 @@ func CreateUser(username, password, databaseName, databaseRole, environment stri
 	userItem := usersData.Iter()
 	found := false
 	for userItem.Next(result) && !found {
-		if username == result["user"] || result["db"] == databaseName {
+		if username == result["user"] && result["db"] == databaseName {
 			found = true
 		}
 	}
