@@ -8,7 +8,12 @@
       "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
     ],
     "path":"/",
-    "mongodb":{"role":"dbOwner","database_name":[{"staging":"bz_staging"},{"sandbox":"bz_sandbox"}]}
+    "mongodb":{
+      "role":"dbOwner",
+      "database_name":{
+        "staging":"bz_staging",
+        "sandbox":"bz_sandbox"
+        }}
   },
   "btrz-worker-exports":{
     "service_name":"btrz-worker-exports",

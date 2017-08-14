@@ -61,7 +61,7 @@ func TestMongoInformationDatabaseName(t *testing.T) {
 	if !ok {
 		t.Fatal("failed to get value")
 	}
-	if information.MongoSettings.DatabaseName[0]["staging"] != "bz_staging" {
+	if information.MongoSettings.DatabaseName["staging"] != "bz_staging" {
 		t.Fatal("Can't retrieve staging db info")
 	}
 

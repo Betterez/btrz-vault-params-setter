@@ -1,6 +1,7 @@
 package btrzaws
 
 import (
+	"btrzdb"
 	"btrzutils"
 	"errors"
 	"fmt"
@@ -84,9 +85,18 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 			if err != nil {
 				return err
 			}
-			_, err = addKeysToVault(environment, userKeysResponse, serviceInfo)
+			_, err = addAWSKeysToVault(environment, userKeysResponse, serviceInfo)
 			if err != nil {
 				return err
+			}
+		}
+		if serviceInfo.HasMongoInformation() {
+			created, err := createMongoUser(serviceInfo, environment)
+			if err != nil {
+				return err
+			}
+			if !created {
+				fmt.Println("User was not created, it is already exists")
 			}
 		}
 	}
@@ -94,7 +104,19 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 	return nil
 }
 
-func addKeysToVault(environment string, akOutput *iam.CreateAccessKeyOutput, serviceInfo *ServiceInformation) (int, error) {
+func createMongoUser(serviceInfo *ServiceInformation, environment string) (bool, error) {
+	password := btrzutils.RandStringRunes(25)
+	created, err := btrzdb.CreateUser(serviceInfo.GetMongoUserName(), password, serviceInfo.MongoSettings.DatabaseName[environment], serviceInfo.MongoSettings.DatabaseRole, environment)
+	if err != nil {
+		return false, err
+	}
+	if created {
+		addMongoKeysToVault(serviceInfo.GetMongoUserName(), password, environment, serviceInfo)
+	}
+	return created, nil
+}
+
+func addAWSKeysToVault(environment string, akOutput *iam.CreateAccessKeyOutput, serviceInfo *ServiceInformation) (int, error) {
 	const fileName = "secrets/secrets.json"
 	params, err := btrzutils.LoadVaultInfoFromJSONFile(fileName, environment)
 	if err != nil {
@@ -106,5 +128,20 @@ func addKeysToVault(environment string, akOutput *iam.CreateAccessKeyOutput, ser
 	}
 	awsKeysString := fmt.Sprintf(`{"AWS_SERVICE_KEY":"%s","AWS_SERVICE_SECRET":"%s"}`, *akOutput.AccessKey.AccessKeyId, *akOutput.AccessKey.SecretAccessKey)
 	code, err := connection.AddValuesInPath(serviceInfo.GetVaultPath(), awsKeysString)
+	return code, err
+}
+
+func addMongoKeysToVault(username, password, environment string, serviceInfo *ServiceInformation) (int, error) {
+	const fileName = "secrets/secrets.json"
+	params, err := btrzutils.LoadVaultInfoFromJSONFile(fileName, environment)
+	if err != nil {
+		return 0, err
+	}
+	connection, err := btrzutils.CreateVaultConnection(params)
+	if err != nil {
+		return 0, err
+	}
+	mongoString := fmt.Sprintf(`{"MONGO_DB_USERNAME":"%s","MONGO_DB_PASSWORD":"%s"}`, username, password)
+	code, err := connection.AddValuesInPath(serviceInfo.GetVaultPath(), mongoString)
 	return code, err
 }

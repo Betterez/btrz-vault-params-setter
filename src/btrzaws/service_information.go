@@ -6,8 +6,8 @@ import (
 
 // MongoInformation - service mongo information
 type MongoInformation struct {
-	DatabaseRole string              `json:"role"`
-	DatabaseName []map[string]string `json:"database_name"`
+	DatabaseRole string            `json:"role"`
+	DatabaseName map[string]string `json:"database_name"`
 }
 
 // ServiceInformation - service informaito needed to create groups and users
@@ -29,6 +29,11 @@ func GenerateServiceInformation(serviceName string) *ServiceInformation {
 	}
 }
 
+// GetMongoUserName - returns mongo username for this service
+func (si *ServiceInformation) GetMongoUserName() string {
+	return "mongo_" + si.ServiceName
+}
+
 // AddServiceArn - adds an aws arn to the service request
 func (si *ServiceInformation) AddServiceArn(arn string) {
 	si.RequiredArn = append(si.RequiredArn, arn)
@@ -42,6 +47,17 @@ func (si *ServiceInformation) GetVaultPath() string {
 // GetGroupName - return the group name for the service
 func (si *ServiceInformation) GetGroupName() string {
 	return fmt.Sprintf("%s-Group", si.ServiceName)
+}
+
+// HasMongoInformation - returns true if this service contain mongo info
+func (si *ServiceInformation) HasMongoInformation() bool {
+	if si.MongoSettings.DatabaseRole != "" {
+		if len(si.MongoSettings.DatabaseName) > 0 {
+			return true
+		}
+
+	}
+	return false
 }
 
 // IsInformationOK - Checks if the informaito provided is OK to process

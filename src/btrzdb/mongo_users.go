@@ -10,14 +10,14 @@ import (
 )
 
 // CreateUser - create a user for the mentioned environment, unless one exists
-func CreateUser(username, password, databaseName, databaseRole, environment string) error {
+func CreateUser(username, password, databaseName, databaseRole, environment string) (bool, error) {
 	deployment, err := GetDialInfo(environment)
 	if err != nil {
-		return err
+		return false, err
 	}
 	connection, err := mgo.DialWithInfo(deployment)
 	if err != nil {
-		return err
+		return false, err
 	}
 	dbCollection := "system.users"
 	usersData := connection.DB("admin").C(dbCollection).Find(bson.M{})
@@ -30,11 +30,14 @@ func CreateUser(username, password, databaseName, databaseRole, environment stri
 		}
 	}
 	if found {
-		return nil
+		return false, nil
 	}
 	betterezUser := &mgo.User{Password: password, Username: username, Roles: []mgo.Role{mgo.Role(databaseRole)}}
 	err = connection.DB("secondjob").UpsertUser(betterezUser)
-	return err
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // GetDialInfo - get dial info from secret file
