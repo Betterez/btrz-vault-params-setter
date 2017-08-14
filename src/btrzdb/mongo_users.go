@@ -69,5 +69,8 @@ func GetDialInfo(environment string) (*mgo.DialInfo, error) {
 		return nil, err
 	}
 	result.Addrs = []string{value}
+	if result.Username == "" || result.Password == "" || len(result.Addrs) < 1 || result.Addrs[0] == "" {
+		return nil, errors.New("Missing database connection parameters")
+	}
 	return result, nil
 }
