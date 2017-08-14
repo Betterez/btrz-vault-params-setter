@@ -5,10 +5,10 @@ import (
 	"btrzutils"
 	"errors"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"log"
 )
 
 // CreateGroupAndUsersForService - for a given service name creates a groups, users and stores the keys in the vault
@@ -48,6 +48,7 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 		}
 	}
 	for _, environment := range serviceInfo.RequiredEnvironments {
+		fmt.Println("running user creation for environment", environment, "service", serviceInfo.ServiceName)
 		currentUserName := fmt.Sprintf("user-%s-%s", serviceInfo.ServiceName, environment)
 		parameterFound = false
 		usersListResponse, err := iamService.ListUsers(&iam.ListUsersInput{
@@ -58,6 +59,7 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 		}
 		for _, userInformation := range usersListResponse.Users {
 			if *userInformation.UserName == currentUserName {
+				log.Printf("aws user was found, skipping\n")
 				parameterFound = true
 				break
 			}
