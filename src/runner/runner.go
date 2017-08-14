@@ -2,6 +2,8 @@ package main
 
 import (
 	"btrzaws"
+	_ "btrzdb"
+	_ "btrzutils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -67,5 +69,11 @@ func updateGroupsAndUsers() {
 	}
 }
 func main() {
-	updateGroupsAndUsers()
+	/*username := btrzutils.RandStringRunes(20)
+	password := btrzutils.RandStringRunes(20)
+	if err := btrzdb.CreateUser(username, password); err != nil {
+		fmt.Printf("error %v occure", err)
+	} else {
+		fmt.Printf("user %s created with password %s", username, password)
+	}*/
 }

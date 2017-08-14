@@ -45,3 +45,65 @@ func TestLoadingServiceFile(t *testing.T) {
 		}
 	}
 }
+
+func TestMongoInformationDatabaseName(t *testing.T) {
+	servicesFile := "../../services/services.json"
+	data, err := ioutil.ReadFile(servicesFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	servicesData := make(map[string]ServiceInformation)
+	err = json.Unmarshal(data, &servicesData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	information, ok := servicesData["btrz-worker-data-import"]
+	if !ok {
+		t.Fatal("failed to get value")
+	}
+	if information.MongoSettings.DatabaseName[0]["staging"] != "bz_staging" {
+		t.Fatal("Can't retrieve staging db info")
+	}
+
+}
+func TestMongoInformationRoleName(t *testing.T) {
+	servicesFile := "../../services/services.json"
+	expectedRole := "dbOwner"
+	data, err := ioutil.ReadFile(servicesFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	servicesData := make(map[string]ServiceInformation)
+	err = json.Unmarshal(data, &servicesData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	information, ok := servicesData["btrz-worker-data-import"]
+	if !ok {
+		t.Fatal("failed to get value")
+	}
+	if information.MongoSettings.DatabaseRole != expectedRole {
+		t.Fatalf("Bad database role. expecting %s, got %s", expectedRole, information.MongoSettings.DatabaseRole)
+	}
+}
+
+func TestServiceInfoWithoutMongo(t *testing.T) {
+	t.SkipNow()
+	servicesFile := "../../services/services.json"
+	data, err := ioutil.ReadFile(servicesFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	servicesData := make(map[string]ServiceInformation)
+	err = json.Unmarshal(data, &servicesData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	information, ok := servicesData["btrz-worker-exports"]
+	if !ok {
+		t.Fatal("failed to get value")
+	}
+	if information.MongoSettings.DatabaseRole != "" {
+		t.Fatal("got a value for non existing value")
+	}
+}

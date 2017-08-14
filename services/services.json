@@ -7,7 +7,8 @@
       "arn:aws:iam::aws:policy/AmazonSESFullAccess",
       "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
     ],
-    "path":"/"
+    "path":"/",
+    "mongodb":{"role":"dbOwner","database_name":[{"staging":"bz_staging"},{"sandbox":"bz_sandbox"}]}
   },
   "btrz-worker-exports":{
     "service_name":"btrz-worker-exports",

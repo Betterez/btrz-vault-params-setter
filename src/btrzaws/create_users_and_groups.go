@@ -10,12 +10,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
+// MongoInformation - service mongo information
+type MongoInformation struct {
+	DatabaseRole string              `json:"role"`
+	DatabaseName []map[string]string `json:"database_name"`
+}
+
 // ServiceInformation - service informaito needed to create groups and users
 type ServiceInformation struct {
-	ServiceName          string   `json:"service_name"`
-	RequiredEnvironments []string `json:"environments"`
-	RequiredArn          []string `json:"arns"`
-	Path                 string   `json:"path"`
+	ServiceName          string           `json:"service_name"`
+	RequiredEnvironments []string         `json:"environments"`
+	RequiredArn          []string         `json:"arns"`
+	Path                 string           `json:"path"`
+	MongoSettings        MongoInformation `json:"mongodb"`
 }
 
 // GenerateServiceInformation - create a ServiceInformation with default settings
