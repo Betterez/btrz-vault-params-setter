@@ -10,6 +10,12 @@ type MongoInformation struct {
 	DatabaseName map[string]string `json:"database_name"`
 }
 
+// APIService - general api service contains key and secret, which we
+type APIService struct {
+	APIKey    string `json:"api_key"`
+	APISecret string `json:"api_secret"`
+}
+
 // ServiceInformation - service informaito needed to create groups and users
 type ServiceInformation struct {
 	ServiceName          string           `json:"service_name"`
@@ -17,6 +23,7 @@ type ServiceInformation struct {
 	RequiredArn          []string         `json:"arns"`
 	Path                 string           `json:"path"`
 	MongoSettings        MongoInformation `json:"mongodb"`
+	APIServices          []APIService     `json:"api_services"`
 }
 
 // GenerateServiceInformation - create a ServiceInformation with default settings
@@ -32,6 +39,11 @@ func GenerateServiceInformation(serviceName string) *ServiceInformation {
 // GetMongoUserName - returns mongo username for this service
 func (si *ServiceInformation) GetMongoUserName() string {
 	return "mongo_" + si.ServiceName
+}
+
+// HasAPIKeys - is this service info has other api keys
+func (si *ServiceInformation) HasAPIKeys() bool {
+	return len(si.APIServices) > 0
 }
 
 // AddServiceArn - adds an aws arn to the service request

@@ -13,7 +13,8 @@
       "database_name":{
         "staging":"bz_staging",
         "sandbox":"bz_sandbox"
-        }}
+        }},
+        "api_services":[]
   },
   "btrz-worker-exports":{
     "service_name":"btrz-worker-exports",
