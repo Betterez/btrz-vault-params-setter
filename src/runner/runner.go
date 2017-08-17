@@ -3,7 +3,7 @@ package main
 import (
 	"btrzaws"
 	_ "btrzdb"
-	_ "btrzutils"
+	"btrzutils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -16,25 +16,6 @@ import (
 const (
 	versionNumber = 1
 )
-
-// func setup() {
-// 	awsSession, err := btrzaws.GetAWSSession()
-// 	if err != nil {
-// 		fmt.Print(err, "can't get a session")
-// 		os.Exit(1)
-// 	}
-// 	log.Println("session created")
-// 	iamService := iam.New(awsSession)
-// 	if iamService == nil {
-// 		fmt.Println("can't create iam")
-// 		os.Exit(1)
-// 	}
-// 	info := btrzaws.GenerateServiceInformation("test-service-1")
-// 	err = btrzaws.CreateGroupAndUsersForService(awsSession, iamService, info)
-// 	if err != nil {
-// 		fmt.Println(err, "creating users and group")
-// 	}
-// }
 
 func updateGroupsAndUsers() {
 	serviceFile := "./services/services.json"
@@ -69,5 +50,15 @@ func updateGroupsAndUsers() {
 	}
 }
 func main() {
-	updateGroupsAndUsers()
+	const fileName = "./secrets/log_entries.json"
+	driver, err := btrzutils.CreateConnectionFromSecretsFile(fileName)
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+	if !driver.IsAuthenticated() {
+		fmt.Println("not authenticated!")
+		os.Exit(1)
+	}
+	fmt.Println("account name:", driver.GetAccountName())
 }

@@ -14,7 +14,7 @@ func TestLogEntriesConnection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	users, err := connection.GetUsers()
+	_, err = connection.GetUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
