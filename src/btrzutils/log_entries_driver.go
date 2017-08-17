@@ -24,6 +24,8 @@ type LogEntriesConnection struct {
 const (
 	// LeAPIHeader  the header string for log entries
 	LeAPIHeader = "x-api-key"
+	// LERestURL  Root url
+	LERestURL = "https://rest.logentries.com/"
 )
 
 // CreateSha256 - creates sha 256 from a given string
@@ -52,7 +54,7 @@ func CreateConnection(APIKey, APIKeyID, accountID string) (*LogEntriesConnection
 	httpClient := &http.Client{}
 	httpClient.Timeout = time.Duration(time.Second * 6)
 	uriString := fmt.Sprintf("management/accounts/%s", accountID)
-	urlStr := fmt.Sprintf("https://rest.logentries.com/%s", uriString)
+	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
 	dateString := time.Now().UTC().Format("Mon, _2 Jan 2006 15:04:05 GMT")
 	//dateString := "Thu, 17 Aug 2017 20:16:24 GMT"
 	requestMethod := "GET"
@@ -64,7 +66,6 @@ func CreateConnection(APIKey, APIKeyID, accountID string) (*LogEntriesConnection
 	request.Header.Set("Content-Type", contentType)
 	request.Header.Set("Date", dateString)
 	request.Header.Set("authorization-api-key", fmt.Sprintf("%s:%s", APIKeyID, GenerateSignature(APIKey, "", contentType, dateString, requestMethod, uriString)))
-	//fmt.Println("header", request.Header.Get("authorization-api-key"))
 	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
