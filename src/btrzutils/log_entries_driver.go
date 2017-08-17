@@ -44,6 +44,14 @@ func GenerateSignature(apiKey, body, contentType, dateString, requestMethod, que
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
 }
 
+func (con *LogEntriesConnection) setRequestHeader(request *http.Request, requestMethod, uriString string) {
+	dateString := time.Now().UTC().Format("Mon, _2 Jan 2006 15:04:05 GMT")
+	contentType := "application/json"
+	request.Header.Set("Content-Type", contentType)
+	request.Header.Set("Date", dateString)
+	request.Header.Set("authorization-api-key", fmt.Sprintf("%s:%s", con.apiKeyID, GenerateSignature(con.apiKey, "", contentType, dateString, requestMethod, uriString)))
+}
+
 // CreateConnection - returns new connection or an error
 func CreateConnection(APIKey, APIKeyID, accountID string) (*LogEntriesConnection, error) {
 	result := &LogEntriesConnection{
@@ -55,17 +63,12 @@ func CreateConnection(APIKey, APIKeyID, accountID string) (*LogEntriesConnection
 	httpClient.Timeout = time.Duration(time.Second * 6)
 	uriString := fmt.Sprintf("management/accounts/%s", accountID)
 	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
-	dateString := time.Now().UTC().Format("Mon, _2 Jan 2006 15:04:05 GMT")
-	//dateString := "Thu, 17 Aug 2017 20:16:24 GMT"
 	requestMethod := "GET"
 	request, err := http.NewRequest(requestMethod, urlStr, nil)
 	if err != nil {
 		return nil, err
 	}
-	contentType := "application/json"
-	request.Header.Set("Content-Type", contentType)
-	request.Header.Set("Date", dateString)
-	request.Header.Set("authorization-api-key", fmt.Sprintf("%s:%s", APIKeyID, GenerateSignature(APIKey, "", contentType, dateString, requestMethod, uriString)))
+	result.setRequestHeader(request, requestMethod, uriString)
 	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
