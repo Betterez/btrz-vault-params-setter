@@ -15,6 +15,11 @@ type usersResponse struct {
 	Users []LogEntryUser `json:"users"`
 }
 
+// UserResponse - response object
+type UserResponse struct {
+	User LogEntryUser `json:"user"`
+}
+
 func (user LogEntryUser) String() string {
 	result := user.UserID
 	if user.FirstName != "" {
@@ -26,5 +31,6 @@ func (user LogEntryUser) String() string {
 	if user.Email != "" {
 		result += ", " + user.Email
 	}
+	result += "\n" + user.LoginName
 	return result
 }

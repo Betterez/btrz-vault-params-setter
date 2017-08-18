@@ -61,12 +61,10 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("account name:", driver.GetAccountName())
-	users, err := driver.GetUsers()
+	user, err := driver.CreateUser("zz"+btrzutils.RandStringRunes(5), "zz"+btrzutils.RandStringRunes(5), "zz"+btrzutils.RandStringRunes(5)+"@betterez.com")
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	for _, user := range users {
-		fmt.Println(user)
-	}
+	fmt.Println("user was created", user)
 }

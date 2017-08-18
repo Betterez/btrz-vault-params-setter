@@ -1,6 +1,7 @@
 package btrzutils
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -45,12 +46,12 @@ func GenerateSignature(apiKey, body, contentType, dateString, requestMethod, que
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
 }
 
-func (con *LogEntriesConnection) setRequestHeader(request *http.Request, requestMethod, uriString string) {
+func (con *LogEntriesConnection) setRequestHeader(request *http.Request, requestMethod, uriString, requestBody string) {
 	dateString := time.Now().UTC().Format("Mon, _2 Jan 2006 15:04:05 GMT")
 	contentType := "application/json"
 	request.Header.Set("Content-Type", contentType)
 	request.Header.Set("Date", dateString)
-	request.Header.Set("authorization-api-key", fmt.Sprintf("%s:%s", con.apiKeyID, GenerateSignature(con.apiKey, "", contentType, dateString, requestMethod, uriString)))
+	request.Header.Set("authorization-api-key", fmt.Sprintf("%s:%s", con.apiKeyID, GenerateSignature(con.apiKey, requestBody, contentType, dateString, requestMethod, uriString)))
 }
 
 // CreateConnection - returns new connection or an error
@@ -69,7 +70,7 @@ func CreateConnection(APIKey, APIKeyID, accountID string) (*LogEntriesConnection
 	if err != nil {
 		return nil, err
 	}
-	result.setRequestHeader(request, requestMethod, uriString)
+	result.setRequestHeader(request, requestMethod, uriString, "")
 	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -135,7 +136,7 @@ func (con *LogEntriesConnection) GetUsers() ([]LogEntryUser, error) {
 	httpClient := &http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
-	con.setRequestHeader(request, requestMethod, uriString)
+	con.setRequestHeader(request, requestMethod, uriString, "")
 	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -150,4 +151,35 @@ func (con *LogEntriesConnection) GetUsers() ([]LogEntryUser, error) {
 	decoder.Decode(users)
 	//
 	return users.Users, nil
+}
+
+// CreateUser - create new user in le
+func (con *LogEntriesConnection) CreateUser(firstname, lastname, email string) (*LogEntryUser, error) {
+	uriString := fmt.Sprintf("management/accounts/%s/users", con.accountID)
+	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
+	requestMethod := "POST"
+	requestBody := fmt.Sprintf(`{
+        "user":{
+            "email": "%s",
+            "first_name": "%s",
+            "last_name": "%s"
+        }
+    }`, email, firstname, lastname)
+	request, _ := http.NewRequest(requestMethod, urlStr, bytes.NewBuffer([]byte(requestBody)))
+	httpClient := &http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	con.setRequestHeader(request, requestMethod, uriString, requestBody)
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode > 399 {
+		return nil, fmt.Errorf("User creation returned %d error", response.StatusCode)
+	}
+	jd := json.NewDecoder(response.Body)
+	result := &UserResponse{}
+	jd.Decode(result)
+	return &result.User, nil
 }
