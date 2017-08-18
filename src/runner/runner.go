@@ -61,10 +61,18 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("account name:", driver.GetAccountName())
-	user, err := driver.CreateUser("zz"+btrzutils.RandStringRunes(5), "zz"+btrzutils.RandStringRunes(5), "zz"+btrzutils.RandStringRunes(5)+"@betterez.com")
+	// user, err := driver.CreateUser("zz"+btrzutils.RandStringRunes(5), "zz"+btrzutils.RandStringRunes(5), "zz"+btrzutils.RandStringRunes(5)+"@betterez.com")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println("user was created", user)
+	logsData, err := driver.ListLogsSet()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Print(err)
 		os.Exit(1)
 	}
-	fmt.Println("user was created", user)
+	for _, logData := range logsData.Logsets {
+		fmt.Println(logData)
+	}
 }

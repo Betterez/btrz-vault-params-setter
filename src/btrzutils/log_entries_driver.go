@@ -183,3 +183,48 @@ func (con *LogEntriesConnection) CreateUser(firstname, lastname, email string) (
 	jd.Decode(result)
 	return &result.User, nil
 }
+
+func (con *LogEntriesConnection) CreateNewLog(logName string) {
+	requestBody := `{
+	  "log": {
+	    "name": "%s",
+	    "structures": [],
+	    "user_data": {
+	      "le_agent_filename": "",
+	      "le_agent_follow": "false"
+	    },
+	    "source_type": "token",
+	    "token_seed": null,
+	    "logsets_info": [
+	      {
+	        "id": "d25737e8-7135-4b48-b0f8-4b4b5b60b358"
+	      }
+	    ]
+	  }
+	}`
+	requestBody = fmt.Sprintf(requestBody, logName)
+}
+
+// ListLogsSet - list all log sets and their info
+func (con *LogEntriesConnection) ListLogsSet() (*LogEntriesLogSetResponse, error) {
+	uriString := "management/logsets"
+	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
+	requestMethod := "GET"
+	request, _ := http.NewRequest(requestMethod, urlStr, nil)
+	httpClient := &http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	con.setRequestHeader(request, requestMethod, uriString, "")
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode > 399 {
+		return nil, fmt.Errorf("Bad http code - %d", response.StatusCode)
+	}
+	defer response.Body.Close()
+	dec := json.NewDecoder(response.Body)
+	result := &LogEntriesLogSetResponse{}
+	dec.Decode(result)
+	return result, nil
+}
