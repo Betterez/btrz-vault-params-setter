@@ -61,4 +61,12 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("account name:", driver.GetAccountName())
+	users, err := driver.GetUsers()
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+	for _, user := range users {
+		fmt.Println(user)
+	}
 }

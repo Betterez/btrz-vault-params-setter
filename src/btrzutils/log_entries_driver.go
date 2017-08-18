@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	simplejson "github.com/bitly/go-simplejson"
 	"net/http"
@@ -125,20 +126,28 @@ func (con *LogEntriesConnection) GetAccountName() string {
 }
 
 // GetUsers - list users in the account
-func (con *LogEntriesConnection) GetUsers() ([]string, error) {
-	url := fmt.Sprintf("https://rest.logentries.com/management/accounts/%s/users", con.accountID)
-	usersRequest, _ := http.NewRequest("GET", url, nil)
-	usersRequest.Header.Set(LeAPIHeader, con.apiKey)
+func (con *LogEntriesConnection) GetUsers() ([]LogEntryUser, error) {
+	uriString := fmt.Sprintf("management/accounts/%s/users", con.accountID)
+	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
+	requestMethod := "GET"
+	request, _ := http.NewRequest(requestMethod, urlStr, nil)
+
 	httpClient := &http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
-	response, err := httpClient.Do(usersRequest)
+	con.setRequestHeader(request, requestMethod, uriString)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	if response.StatusCode > 399 {
 		return nil, fmt.Errorf("Bad http code - %d", response.StatusCode)
 	}
-	foundUsers := make([]string, 0)
-	return foundUsers, nil
+	defer response.Body.Close()
+	//bodyData, _ := ioutil.ReadAll(response.Body)
+	users := &usersResponse{}
+	decoder := json.NewDecoder(response.Body)
+	decoder.Decode(users)
+	//
+	return users.Users, nil
 }
