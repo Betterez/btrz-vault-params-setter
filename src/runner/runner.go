@@ -9,8 +9,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/bsphere/le_go"
 )
 
 const (
@@ -67,12 +69,36 @@ func main() {
 	// 	os.Exit(1)
 	// }
 	// fmt.Println("user was created", user)
-	logsData, err := driver.ListLogsSet()
+	// logsData, err := driver.ListLogsSet()
+	// if err != nil {
+	// 	fmt.Print(err)
+	// 	os.Exit(1)
+	// }
+	// for _, logData := range logsData.Logsets {
+	// 	fmt.Println(logData)
+	// }
+	log, err := driver.CreateNewLog("testlog", "staging")
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
-	for _, logData := range logsData.Logsets {
-		fmt.Println(logData)
+	if !log.HasTokens() {
+		fmt.Println("Log has no tokens")
+	}
+	if log.HasTokens() {
+		fmt.Printf("log has tokens, %s\n", log.Tokens[0])
+		le, err := le_go.Connect(log.Tokens[0])
+		if err != nil {
+			fmt.Printf("err %v while posting to le\n", err)
+		}
+		fmt.Println("connected to LE, sleeping 10 seconds to post...")
+		counter := 0
+		for {
+			time.Sleep(10 * time.Second)
+			le.Println(counter, "new log ", time.Now().UTC().Format("Mon, _2 Jan 2006 15:04:05 GMT"))
+			fmt.Print("posted.\n")
+			counter++
+		}
+
 	}
 }

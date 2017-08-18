@@ -13,7 +13,7 @@ func createSha(input string) string {
 	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	return sha
 }
-func main() {
+func main1() {
 	fmt.Println("")
 	ref := time.Now().UTC()
 	fmt.Println(ref.Format("Mon, _2 Jan 2006 15:04:05 GMT"))

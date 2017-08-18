@@ -6,7 +6,9 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
+
 	"encoding/json"
+	"errors"
 	"fmt"
 	simplejson "github.com/bitly/go-simplejson"
 	"net/http"
@@ -19,6 +21,7 @@ type LogEntriesConnection struct {
 	apiKey        string
 	apiKeyID      string
 	accountID     string
+	accountRWKey  string
 	accountName   string
 	authenticated bool
 }
@@ -55,17 +58,18 @@ func (con *LogEntriesConnection) setRequestHeader(request *http.Request, request
 }
 
 // CreateConnection - returns new connection or an error
-func CreateConnection(APIKey, APIKeyID, accountID string) (*LogEntriesConnection, error) {
+func CreateConnection(APIKey, APIKeyID, accountID, rwKey string) (*LogEntriesConnection, error) {
 	result := &LogEntriesConnection{
-		apiKey:    APIKey,
-		accountID: accountID,
-		apiKeyID:  APIKeyID,
+		apiKey:       APIKey,
+		accountID:    accountID,
+		apiKeyID:     APIKeyID,
+		accountRWKey: rwKey,
 	}
 	httpClient := &http.Client{}
 	httpClient.Timeout = time.Duration(time.Second * 6)
 	uriString := fmt.Sprintf("management/accounts/%s", accountID)
 	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
-	requestMethod := "GET"
+	requestMethod := http.MethodGet
 	request, err := http.NewRequest(requestMethod, urlStr, nil)
 	if err != nil {
 		return nil, err
@@ -112,7 +116,11 @@ func CreateConnectionFromSecretsFile(fileName string) (*LogEntriesConnection, er
 	if err != nil {
 		return nil, err
 	}
-	result, err := CreateConnection(apiKey, apiKeyID, accountResourceID)
+	rwKey, err := jsonData.Get("account_key").String()
+	if err != nil {
+		return nil, err
+	}
+	result, err := CreateConnection(apiKey, apiKeyID, accountResourceID, rwKey)
 	return result, err
 }
 
@@ -130,7 +138,7 @@ func (con *LogEntriesConnection) GetAccountName() string {
 func (con *LogEntriesConnection) GetUsers() ([]LogEntryUser, error) {
 	uriString := fmt.Sprintf("management/accounts/%s/users", con.accountID)
 	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
-	requestMethod := "GET"
+	requestMethod := http.MethodGet
 	request, _ := http.NewRequest(requestMethod, urlStr, nil)
 
 	httpClient := &http.Client{
@@ -157,7 +165,7 @@ func (con *LogEntriesConnection) GetUsers() ([]LogEntryUser, error) {
 func (con *LogEntriesConnection) CreateUser(firstname, lastname, email string) (*LogEntryUser, error) {
 	uriString := fmt.Sprintf("management/accounts/%s/users", con.accountID)
 	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
-	requestMethod := "POST"
+	requestMethod := http.MethodPost
 	requestBody := fmt.Sprintf(`{
         "user":{
             "email": "%s",
@@ -184,8 +192,9 @@ func (con *LogEntriesConnection) CreateUser(firstname, lastname, email string) (
 	return &result.User, nil
 }
 
-func (con *LogEntriesConnection) CreateNewLog(logName string) {
-	requestBody := `{
+// CreateNewLog - create a new log in the logset
+func (con *LogEntriesConnection) CreateNewLog(logName, logSetName string) (*LogsEntriesLog, error) {
+	const requestBodyTemplate = `{
 	  "log": {
 	    "name": "%s",
 	    "structures": [],
@@ -197,19 +206,53 @@ func (con *LogEntriesConnection) CreateNewLog(logName string) {
 	    "token_seed": null,
 	    "logsets_info": [
 	      {
-	        "id": "d25737e8-7135-4b48-b0f8-4b4b5b60b358"
+	        "id": "%s"
 	      }
 	    ]
 	  }
 	}`
-	requestBody = fmt.Sprintf(requestBody, logName)
+
+	logSetsResponse, err := con.ListLogsSet()
+	if err != nil {
+		return nil, err
+	}
+	logSetID := ""
+	for _, logSetInfo := range logSetsResponse.Logsets {
+		if logSetInfo.Name == logSetName {
+			logSetID = logSetInfo.ID
+			break
+		}
+	}
+	if logSetID == "" {
+		return nil, errors.New("Log set does not exist")
+	}
+	requestBody := fmt.Sprintf(requestBodyTemplate, logName, logSetID)
+	uriString := "management/logs"
+	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
+	requestMethod := http.MethodPost
+	request, _ := http.NewRequest(requestMethod, urlStr, bytes.NewBuffer([]byte(requestBody)))
+	httpClient := &http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	con.setRequestHeader(request, requestMethod, uriString, requestBody)
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode > 399 {
+		return nil, fmt.Errorf("Error code %d returned from the server.", response.StatusCode)
+	}
+	result := &LogsEntriesLogResponse{}
+	dec := json.NewDecoder(response.Body)
+	dec.Decode(result)
+	return &result.Log, nil
 }
 
 // ListLogsSet - list all log sets and their info
 func (con *LogEntriesConnection) ListLogsSet() (*LogEntriesLogSetResponse, error) {
 	uriString := "management/logsets"
 	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
-	requestMethod := "GET"
+	requestMethod := http.MethodGet
 	request, _ := http.NewRequest(requestMethod, urlStr, nil)
 	httpClient := &http.Client{
 		Timeout: time.Duration(5 * time.Second),
