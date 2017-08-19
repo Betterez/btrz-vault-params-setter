@@ -240,7 +240,7 @@ func (con *LogEntriesConnection) CreateNewLog(logName, logSetName string) (*Logs
 		return nil, err
 	}
 	if response.StatusCode > 399 {
-		return nil, fmt.Errorf("Error code %d returned from the server.", response.StatusCode)
+		return nil, fmt.Errorf("error code %d returned from the server", response.StatusCode)
 	}
 	result := &LogsEntriesLogResponse{}
 	dec := json.NewDecoder(response.Body)
@@ -270,6 +270,34 @@ func (con *LogEntriesConnection) ListLogs() (*LogEntriesLogsResponse, error) {
 	result := &LogEntriesLogsResponse{}
 	dec.Decode(result)
 	return result, nil
+}
+
+// GetLogInfo - return log info, or nil if none found
+func (con *LogEntriesConnection) GetLogInfo(serviceName, environment string) (*LogsEntriesLog, error) {
+	logs, err := con.ListLogs()
+	var result *LogsEntriesLog
+	if err != nil {
+		return nil, err
+	}
+	for _, logInfo := range logs.Logs {
+		if len(logInfo.LogSetsInfo) == 0 {
+			continue
+		}
+		if logInfo.Name == serviceName && logInfo.LogSetsInfo[0].Name == environment {
+			result = &logInfo
+			break
+		}
+	}
+	return result, nil
+}
+
+// HasServiceLogInEnvironment - checks if a service log exists for the specified environment
+func (con *LogEntriesConnection) HasServiceLogInEnvironment(serviceName, environment string) (bool, error) {
+	logInfo, err := con.GetLogInfo(serviceName, environment)
+	if err != nil {
+		return false, err
+	}
+	return logInfo != nil, nil
 }
 
 // ListLogsSet - list all log sets and their info
