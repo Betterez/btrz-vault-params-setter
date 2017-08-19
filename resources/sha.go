@@ -1,4 +1,4 @@
-package main
+package btrztest
 
 import (
 	"crypto/sha256"

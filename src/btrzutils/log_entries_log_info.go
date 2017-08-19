@@ -23,6 +23,7 @@ func (lel LogsEntriesLog) String() string {
 	return lel.ID + "-" + lel.Name
 }
 
+// HasTokens does this log has a token
 func (lel *LogsEntriesLog) HasTokens() bool {
 	return len(lel.Tokens) > 0
 }

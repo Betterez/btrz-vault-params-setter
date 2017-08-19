@@ -152,3 +152,32 @@ func addMongoKeysToVault(username, password, environment string, serviceInfo *Se
 	code, err := connection.AddValuesInPath(serviceInfo.GetVaultPath(), mongoString)
 	return code, err
 }
+
+func createJSONStringFromKeyValues(valuePairs map[string]string) string {
+	infoString := "{"
+	currentValue := 0
+	for key, value := range valuePairs {
+		infoString += fmt.Sprintf(`"%s":"%s"`, key, value)
+		currentValue++
+		if currentValue < len(valuePairs) {
+			infoString += ","
+		}
+	}
+	infoString += "}"
+	return infoString
+}
+
+func addServiceValuesToVault(valuePairs map[string]string, environment string, serviceInfo *ServiceInformation) (int, error) {
+	const fileName = "secrets/secrets.json"
+	params, err := btrzutils.LoadVaultInfoFromJSONFile(fileName, environment)
+	if err != nil {
+		return 0, err
+	}
+	connection, err := btrzutils.CreateVaultConnection(params)
+	if err != nil {
+		return 0, err
+	}
+	infoString := createJSONStringFromKeyValues(valuePairs)
+	code, err := connection.AddValuesInPath(serviceInfo.GetVaultPath(), infoString)
+	return code, err
+}

@@ -2,6 +2,7 @@ package btrzaws
 
 import (
 	"encoding/json"
+	simplejson "github.com/bitly/go-simplejson"
 	"io/ioutil"
 	"testing"
 )
@@ -105,5 +106,19 @@ func TestServiceInfoWithoutMongo(t *testing.T) {
 	}
 	if information.MongoSettings.DatabaseRole != "" {
 		t.Fatal("got a value for non existing value")
+	}
+}
+
+func TestJSONStringCreation(t *testing.T) {
+	tester := make(map[string]string)
+	tester["one"] = "111"
+	tester["two"] = "222"
+	js, err := simplejson.NewJson([]byte(createJSONStringFromKeyValues(tester)))
+	if err != nil {
+		t.Fatalf("%v error getting json string", err)
+	}
+	value, err := js.Get("one").String()
+	if value != "111" {
+		t.Fatalf("Wrong values received %s ", value)
 	}
 }
