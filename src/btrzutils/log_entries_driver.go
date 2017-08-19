@@ -248,6 +248,30 @@ func (con *LogEntriesConnection) CreateNewLog(logName, logSetName string) (*Logs
 	return &result.Log, nil
 }
 
+// ListLogs - show current logs
+func (con *LogEntriesConnection) ListLogs() (*LogEntriesLogsResponse, error) {
+	uriString := "management/logs"
+	urlStr := fmt.Sprintf("%s%s", LERestURL, uriString)
+	requestMethod := http.MethodGet
+	request, _ := http.NewRequest(requestMethod, urlStr, nil)
+	httpClient := &http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	con.setRequestHeader(request, requestMethod, uriString, "")
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode > 399 {
+		return nil, fmt.Errorf("Bad http code - %d", response.StatusCode)
+	}
+	defer response.Body.Close()
+	dec := json.NewDecoder(response.Body)
+	result := &LogEntriesLogsResponse{}
+	dec.Decode(result)
+	return result, nil
+}
+
 // ListLogsSet - list all log sets and their info
 func (con *LogEntriesConnection) ListLogsSet() (*LogEntriesLogSetResponse, error) {
 	uriString := "management/logsets"
