@@ -24,6 +24,7 @@ type ServiceInformation struct {
 	Path                 string           `json:"path"`
 	MongoSettings        MongoInformation `json:"mongodb"`
 	APIServices          []APIService     `json:"api_services"`
+	LogEntryLog          bool             `json:"user_log_entries"`
 }
 
 // GenerateServiceInformation - create a ServiceInformation with default settings

@@ -118,6 +118,9 @@ func TestJSONStringCreation(t *testing.T) {
 		t.Fatalf("%v error getting json string", err)
 	}
 	value, err := js.Get("one").String()
+	if err != nil {
+		t.Fatalf("%v error getting json string", err)
+	}
 	if value != "111" {
 		t.Fatalf("Wrong values received %s ", value)
 	}

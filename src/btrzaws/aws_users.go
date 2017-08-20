@@ -67,7 +67,7 @@ func getUsersKeysFromCSV(filename string) ([]string, error) {
 	var record []string
 	keysMap := make(map[string]int, 0)
 	if _, err = os.Stat(filename); os.IsNotExist(err) {
-		return nil, fmt.Errorf("The file %s does not exist, or it is not accesible by the current user.", filename)
+		return nil, fmt.Errorf("the file %s does not exist, or it is not accesible by the current user", filename)
 	}
 	usersKeys := make([]string, 0)
 	fileReader, err := os.Open(filename)

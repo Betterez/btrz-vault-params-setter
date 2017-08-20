@@ -291,13 +291,29 @@ func (con *LogEntriesConnection) GetLogInfo(serviceName, environment string) (*L
 	return result, nil
 }
 
-// HasServiceLogInEnvironment - checks if a service log exists for the specified environment
-func (con *LogEntriesConnection) HasServiceLogInEnvironment(serviceName, environment string) (bool, error) {
+// IsServiceLogInEnvironment - checks if a service log exists for the specified environment
+func (con *LogEntriesConnection) IsServiceLogInEnvironment(serviceName, environment string) (bool, error) {
 	logInfo, err := con.GetLogInfo(serviceName, environment)
 	if err != nil {
 		return false, err
 	}
 	return logInfo != nil, nil
+}
+
+// CreateLogIfNotPresent - create a log in a log set only if it does not exist.
+func (con *LogEntriesConnection) CreateLogIfNotPresent(serviceName, environment string) (*LogsEntriesLog, error) {
+	logInfo, err := con.GetLogInfo(serviceName, environment)
+	if err != nil {
+		return nil, err
+	}
+	if logInfo != nil {
+		return logInfo, errors.New("Log already exists")
+	}
+	result, err := con.CreateNewLog(serviceName, environment)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // ListLogsSet - list all log sets and their info
