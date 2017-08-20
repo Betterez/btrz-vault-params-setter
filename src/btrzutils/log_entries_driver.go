@@ -31,6 +31,8 @@ const (
 	LeAPIHeader = "x-api-key"
 	// LERestURL  Root url
 	LERestURL = "https://rest.logentries.com/"
+	// ErrorLogAlreadyExists - log already exists for this environment
+	ErrorLogAlreadyExists = "Log already exists"
 )
 
 // CreateSha256 - creates sha 256 from a given string
@@ -307,7 +309,7 @@ func (con *LogEntriesConnection) CreateLogIfNotPresent(serviceName, environment 
 		return nil, err
 	}
 	if logInfo != nil {
-		return logInfo, errors.New("Log already exists")
+		return logInfo, errors.New(ErrorLogAlreadyExists)
 	}
 	result, err := con.CreateNewLog(serviceName, environment)
 	if err != nil {

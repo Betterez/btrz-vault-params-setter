@@ -14,7 +14,8 @@
         "staging":"bz_staging",
         "sandbox":"bz_sandbox"
         }},
-        "api_services":[]
+        "api_services":[],
+        "use_log_entries":true
   },
   "btrz-worker-exports":{
     "service_name":"btrz-worker-exports",

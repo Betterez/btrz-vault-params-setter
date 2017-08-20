@@ -103,6 +103,7 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 			}
 		}
 		if serviceInfo.LogEntryLog {
+			log.Println("log entries required, creating...")
 			const fileName = "./secrets/log_entries.json"
 			driver, err := btrzutils.CreateConnectionFromSecretsFile(fileName)
 			if err != nil {
@@ -113,7 +114,9 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 			}
 			serviceLog, err := driver.CreateLogIfNotPresent(serviceInfo.GetLELogName(), environment)
 			if err != nil {
-				return err
+				if err.Error() != btrzutils.ErrorLogAlreadyExists {
+					return err
+				}
 			}
 			if !serviceLog.HasTokens() {
 				return errors.New("Service has no tokens")

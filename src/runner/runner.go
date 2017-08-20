@@ -2,8 +2,6 @@ package main
 
 import (
 	"btrzaws"
-	_ "btrzdb"
-	"btrzutils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -52,27 +50,5 @@ func updateGroupsAndUsers() {
 	}
 }
 func main() {
-	const fileName = "./secrets/log_entries.json"
-	driver, err := btrzutils.CreateConnectionFromSecretsFile(fileName)
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	if !driver.IsAuthenticated() {
-		fmt.Println("not authenticated!")
-		os.Exit(1)
-	}
-	fmt.Println("account name:", driver.GetAccountName())
-	createdLog, err := driver.CreateLogIfNotPresent("taltest", "staging")
-	if err != nil {
-		if err.Error() == "Log already exists" {
-			fmt.Println("was already there", createdLog)
-		} else {
-			fmt.Print(err)
-			os.Exit(1)
-		}
-	} else {
-		fmt.Println("new log created:", createdLog)
-	}
-
+	updateGroupsAndUsers()
 }
