@@ -63,13 +63,16 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("account name:", driver.GetAccountName())
-	response, err := driver.ListLogs()
+	createdLog, err := driver.CreateLogIfNotPresent("taltest", "staging")
 	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	for _, logInfo := range response.Logs {
-		fmt.Println(logInfo)
+		if err.Error() == "Log already exists" {
+			fmt.Println("was already there", createdLog)
+		} else {
+			fmt.Print(err)
+			os.Exit(1)
+		}
+	} else {
+		fmt.Println("new log created:", createdLog)
 	}
 
 }

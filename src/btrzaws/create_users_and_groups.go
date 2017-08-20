@@ -102,6 +102,24 @@ func CreateGroupAndUsersForService(awsSession *session.Session, iamService *iam.
 				log.Printf("User %s was not created, it is already exists\n", serviceInfo.GetMongoUserName())
 			}
 		}
+		if serviceInfo.LogEntryLog {
+			const fileName = "./secrets/log_entries.json"
+			driver, err := btrzutils.CreateConnectionFromSecretsFile(fileName)
+			if err != nil {
+				return err
+			}
+			if !driver.IsAuthenticated() {
+				return errors.New("le driver not authenticated")
+			}
+			serviceLog, err := driver.CreateLogIfNotPresent(serviceInfo.GetLELogName(), environment)
+			if err != nil {
+				return err
+			}
+			if !serviceLog.HasTokens() {
+				return errors.New("Service has no tokens")
+			}
+			addServiceValuesToVault(map[string]string{"LOGENTRIES_TOKEN": serviceLog.Tokens[0]}, environment, serviceInfo)
+		}
 	}
 
 	return nil

@@ -73,6 +73,11 @@ func (si *ServiceInformation) HasMongoInformation() bool {
 	return false
 }
 
+// GetLELogName - returns le log name
+func (si *ServiceInformation) GetLELogName() string {
+	return si.ServiceName
+}
+
 // IsInformationOK - Checks if the informaito provided is OK to process
 func (si *ServiceInformation) IsInformationOK() bool {
 	if si.ServiceName == "" {
