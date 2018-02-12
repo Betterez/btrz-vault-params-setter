@@ -1,0 +1,19 @@
+{
+  "sample_service":{
+    "service_name":"sample_service",
+    "environments":["staging","sandbox"],
+    "arns":[
+      "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+      "arn:aws:iam::aws:policy/AmazonSESFullAccess",
+      "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+    ],
+    "path":"/",
+    "mongodb":{
+      "role":"dbOwner",
+      "database_name":{
+        "staging":"bz_staging",
+        "sandbox":"bz_sandbox"
+        }},
+        "api_services":[]
+  }
+}
