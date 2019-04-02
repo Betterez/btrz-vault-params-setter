@@ -1,8 +1,8 @@
 package btrzaws
 
 import (
-	"fmt"
 	"btrzdb"
+	"fmt"
 	"gopkg.in/mgo.v2"
 )
 
@@ -63,7 +63,7 @@ func (si *ServiceInformation) GetVaultPath() string {
 
 // GetGroupName - return the group name for the service
 func (si *ServiceInformation) GetGroupName() string {
-	return fmt.Sprintf("%s-Group", si.ServiceName)
+	return fmt.Sprintf("%s-group", si.ServiceName)
 }
 
 // HasMongoInformation - returns true if this service contain mongo info
@@ -94,14 +94,14 @@ func (si *ServiceInformation) IsInformationOK() bool {
 	if len(si.RequiredEnvironments) == 0 {
 		return false
 	}
-	if si.HasMongoInformation(){
-		for _,currentEnvironment:=range(si.RequiredEnvironments){
-			deployment,err:=btrzdb.GetDialInfo(currentEnvironment)
-			if err!=nil{
-				return false;
+	if si.HasMongoInformation() {
+		for _, currentEnvironment := range si.RequiredEnvironments {
+			deployment, err := btrzdb.GetDialInfo(currentEnvironment)
+			if err != nil {
+				return false
 			}
 			connection, err := mgo.DialWithInfo(deployment)
-			if err != nil || connection==nil{
+			if err != nil || connection == nil {
 				return false
 			}
 			defer connection.Close()
