@@ -1,11 +1,11 @@
 {
-  "btrz_api_webhooks": {
-    "service_name": "btrz_api_webhooks",
-    "environments": ["production","sandbox","staging"],
-    "arns": [
+  "btrz-api-loyalty":{
+    "service_name":"btrz-api-loyalty",
+    "environments":["staging","sandbox","production"],
+    "arns":[
       "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
     ],
-    "path": "/",
-    "use_log_entries": true
+    "path":"/",
+        "api_services":[]
   }
 }

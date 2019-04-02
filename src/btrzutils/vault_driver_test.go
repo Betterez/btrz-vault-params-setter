@@ -22,7 +22,7 @@ func GetToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	token, err := jsonData.Get("staging").Get("vault").Get("token").String()
+	token, err := jsonData.Get("sandbox").Get("vault").Get("token").String()
 	return token, err
 }
 
@@ -184,7 +184,7 @@ func TestParametersLoading(t *testing.T) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		t.SkipNow()
 	}
-	params, err := LoadVaultInfoFromJSONFile(filename, "staging")
+	params, err := LoadVaultInfoFromJSONFile(filename, "sandbox")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +202,7 @@ func TestParametersLoading2(t *testing.T) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		t.SkipNow()
 	}
-	params, err := LoadVaultInfoFromJSONFile(filename, "staging")
+	params, err := LoadVaultInfoFromJSONFile(filename, "sandbox")
 	if err != nil {
 		t.Fatal(err)
 	}
