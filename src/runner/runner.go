@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 )
 
 const (
@@ -16,12 +15,18 @@ const (
 )
 
 func main() {
-	operation := flag.String("op", "", "operation to perform: update,fix-mail,fix-reg,smtp")
+	operation := flag.String("op", "", "operation to perform: update,fix-mail,fix-reg,smtp,vault")
 	repo := flag.String("repo", "", "repository to post in the registry")
 	env := flag.String("env", "", "repository environment")
+	filename := flag.String("vault_file", "", "vault file name (full path) to process")
 	flag.Parse()
 	if *operation == "update" {
-		runDefault()
+		updateGroupsAndUsers()
+	} else if *operation == "vault" {
+		if err := updateVault(*filename); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	} else {
 		if *operation == "fix-email" {
 			fixEmail(*env)
@@ -31,6 +36,7 @@ func main() {
 		if *operation == "smtp" {
 			translateEmailKey()
 		}
+
 	}
 }
 
@@ -61,11 +67,4 @@ func fixEmail(environment string) {
 		os.Exit(1)
 	}
 	updateMissingEmailInfo(environment)
-}
-
-func runDefault() {
-	log.Println("No flags, delay for 5...")
-	time.Sleep(time.Second * 5)
-	log.Println("starting.")
-	updateGroupsAndUsers()
 }

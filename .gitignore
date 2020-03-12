@@ -3,3 +3,4 @@ pkg/
 secrets/
 services/
 test-objects/
+vaults/

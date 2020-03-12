@@ -145,7 +145,7 @@ func (v *VaultServer) EnsureRepositoryExists(repositoryName string) (int, error)
 	}
 	allReposString, err := v.GetJSONValue(AllReposPath)
 	if err != nil {
-		log.Println(err,"getting json for all repos")
+		log.Println(err, "getting json for all repos")
 		return 0, err
 	}
 	// not initialized yet
@@ -231,10 +231,11 @@ func (v *VaultServer) RemoveRepositoryFromList(repositoryName string) (int, erro
 }
 
 // SetValuesForRepository - sets a value for a repository
+// values -  have to be a FULL json string
 func (v *VaultServer) SetValuesForRepository(repositoryName, values string, append bool) (int, error) {
 	code, err := v.EnsureRepositoryExists(repositoryName)
 	if err != nil {
-		log.Print(err,"ensuring repo")
+		log.Print(err, "ensuring repo")
 		return code, err
 	}
 	return v.AddValuesInPath("secret/"+repositoryName, values)
@@ -263,7 +264,7 @@ func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
 	JSONToLoad := simplejson.New()
 	valuesData, err := simplejson.NewJson([]byte(values))
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error creating json:%v", err)
 	}
 	log.Println("getting current values from path", path)
 	existingDataString, err := v.GetJSONValue(path)
@@ -272,7 +273,7 @@ func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
 		return 0, err
 	}
 	if existingDataString == "" {
-		log.Println("seems to be new entry, craeting empty dataset")
+		log.Println("seems to be new entry, creating empty dataset")
 		existingDataString = "{}"
 	}
 	existingDataJSON, err := simplejson.NewJson([]byte(existingDataString))
@@ -293,7 +294,7 @@ func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
 			}
 			JSONToLoad.Set(key, keyValue)
 		}
-	}else{
+	} else {
 		log.Println("This entry is empty, nothing to pull.")
 	}
 	valuesDataMap, err := valuesData.Map()
@@ -313,8 +314,8 @@ func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
 	}
 	log.Println("updating new vault string...")
 	code, err := v.PutJSONValue(path, string(JSONToLoadData))
-	if err!=nil{
-		log.Println(err,"updating new vault string!")
+	if err != nil {
+		log.Println(err, "updating new vault string!")
 	}
 	return code, err
 }
@@ -322,7 +323,7 @@ func (v *VaultServer) AddValuesInPath(path, values string) (int, error) {
 //GetVaultStatus - returns current vault status
 func (v *VaultServer) GetVaultStatus() string {
 	if !v.initialized {
-		return "not initizlied"
+		return "not initialized"
 	}
 	if v.locked {
 		return "locked"
