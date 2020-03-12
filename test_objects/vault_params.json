@@ -1,0 +1,13 @@
+{
+  "server":{
+    "token":"123456789",
+    "port":9000,
+    "address":"vault.myserver.com"
+  },
+  "values":{
+    "taltul":{
+      "pass":"some",
+      "data":"123"
+    }
+  }
+}
