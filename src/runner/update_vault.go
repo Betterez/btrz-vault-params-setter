@@ -54,12 +54,12 @@ func updateVault(filename string) error {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		json, err := server.GetRepositoryValues(key)
+		if err != nil {
+			return err
+		}
+		fmt.Println(json)
 	}
 
-	json, err := server.GetRepositoryValues("taltul")
-	if err != nil {
-		return err
-	}
-	fmt.Println(json)
 	return nil
 }
