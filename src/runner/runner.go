@@ -16,11 +16,11 @@ const (
 )
 
 func main() {
-	operation := flag.String("op", "", "operation to perform")
+	operation := flag.String("op", "", "operation to perform: update,fix-mail,fix-reg,smtp")
 	repo := flag.String("repo", "", "repository to post in the registry")
 	env := flag.String("env", "", "repository environment")
 	flag.Parse()
-	if *operation == "" {
+	if *operation == "update" {
 		runDefault()
 	} else {
 		if *operation == "fix-email" {
