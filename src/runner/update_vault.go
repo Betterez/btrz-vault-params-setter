@@ -8,9 +8,20 @@ import (
 	"os"
 )
 
-type updateValues struct {
-	Repository string
+type VaultServerData struct {
+	Keys    []string `json:"keys"`
+	Address string   `json:"address"`
+	Port    int      `json:"port"`
+	Token   string   `json:"token"`
 }
+
+type VaultEntry struct {
+	ServerData VaultServerData `json:"vault"`
+}
+type VaultRegistry struct {
+	Servers map[string]VaultEntry `json:"servers"`
+}
+
 type vaultUpdater struct {
 	Server btrzutils.VaultConnectionParameters `json:"server"`
 	Values map[string]map[string]string        `json:"values"`
@@ -61,5 +72,43 @@ func updateVault(filename string) error {
 		fmt.Println(json)
 	}
 
+	return nil
+}
+
+func loadVaultRegistryFromFile(filename string) (*VaultRegistry, error) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return nil, err
+	}
+	var bytes []byte
+	var err error
+	if bytes, err = ioutil.ReadFile(filename); err != nil {
+		return nil, err
+	}
+	result := &VaultRegistry{}
+	json.Unmarshal(bytes, result)
+	return result, nil
+}
+
+func loadVaultRegistry() (*VaultRegistry, error) {
+	const (
+		secretsFile = "secrets/secrets.json"
+	)
+	return loadVaultRegistryFromFile(secretsFile)
+}
+
+func showVaultDataForRepo(repo, env string) error {
+	servers, err := loadVaultRegistry()
+	if err != nil {
+		return err
+	}
+	serverInfo, ok := servers.Servers[env]
+	if !ok {
+		return fmt.Errorf("Server for ")
+	}
+	vaultServer, err := btrzutils.CreateVaultConnectionFromParameters(serverInfo.ServerData.Address, serverInfo.ServerData.Token, serverInfo.ServerData.Port)
+	if err != nil {
+		return err
+	}
+	fmt.Println(vaultServer.GetRepositoryValues(repo))
 	return nil
 }

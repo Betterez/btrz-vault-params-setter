@@ -37,3 +37,22 @@ func TestLoadingValues(t *testing.T) {
 		t.Fatalf("bad json string: %s", jsonString)
 	}
 }
+
+func TestLoadServerRegistry(t *testing.T) {
+	registry, err := loadVaultRegistryFromFile("../../test_objects/secrets.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if registry == nil {
+		t.Fatal("registry is nil!")
+	}
+	if len(registry.Servers) != 2 {
+		t.Fatalf("2 servers expected, got %d", len(registry.Servers))
+	}
+	if registry.Servers["staging"].ServerData.Address != "staging.vault.org.com" {
+		t.Fatal("wrong server address received")
+	}
+	if registry.Servers["dadada"].ServerData.Address != "sample.vault.org.com" {
+		t.Fatal("wrong server address received")
+	}
+}

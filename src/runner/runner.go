@@ -23,9 +23,15 @@ func main() {
 	if *operation == "update" {
 		updateGroupsAndUsers()
 	} else if *operation == "vault" {
-		if err := updateVault(*filename); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+		if *repo != "" && *env != "" {
+			showVaultDataForRepo(*repo, *env)
+		} else if *filename != "" {
+			if err := updateVault(*filename); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		} else {
+			fmt.Println("bad params")
 		}
 	} else {
 		if *operation == "fix-email" {
@@ -36,7 +42,6 @@ func main() {
 		if *operation == "smtp" {
 			translateEmailKey()
 		}
-
 	}
 }
 
