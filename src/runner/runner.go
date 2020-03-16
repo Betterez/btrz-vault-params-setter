@@ -24,7 +24,10 @@ func main() {
 		updateGroupsAndUsers()
 	} else if *operation == "vault" {
 		if *repo != "" && *env != "" {
-			showVaultDataForRepo(*repo, *env)
+			if err := showVaultDataForRepo(*repo, *env); err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
+			}
 		} else if *filename != "" {
 			if err := updateVault(*filename); err != nil {
 				fmt.Println(err)

@@ -85,7 +85,9 @@ func loadVaultRegistryFromFile(filename string) (*VaultRegistry, error) {
 		return nil, err
 	}
 	result := &VaultRegistry{}
-	json.Unmarshal(bytes, result)
+	if err = json.Unmarshal(bytes, result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
@@ -103,12 +105,14 @@ func showVaultDataForRepo(repo, env string) error {
 	}
 	serverInfo, ok := servers.Servers[env]
 	if !ok {
-		return fmt.Errorf("Server for ")
+		return fmt.Errorf("servers for %s were not found", env)
 	}
+	fmt.Println("got server info for env")
 	vaultServer, err := btrzutils.CreateVaultConnectionFromParameters(serverInfo.ServerData.Address, serverInfo.ServerData.Token, serverInfo.ServerData.Port)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("values for %s", env)
 	fmt.Println(vaultServer.GetRepositoryValues(repo))
 	return nil
 }
