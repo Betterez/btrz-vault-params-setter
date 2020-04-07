@@ -112,7 +112,14 @@ func showVaultDataForRepo(repo, env string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("values for %s", env)
-	fmt.Println(vaultServer.GetRepositoryValues(repo))
+	fmt.Printf("values for %s\n", env)
+	if values, err := vaultServer.GetRepositoryValues(repo); err == nil {
+		if values2, err := values.Map(); err == nil {
+			for key, value := range values2 {
+				fmt.Printf("\t%s : %s\n", key, value)
+			}
+		}
+
+	}
 	return nil
 }
